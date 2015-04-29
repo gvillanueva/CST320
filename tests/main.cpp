@@ -22,19 +22,43 @@
 * line, preceeded by their lexeme formatted to a width of 12, padded by whitespace.
 ***********************************************************************************/
 #include <stdio.h>
-#include "lex.h"
+#include "../src/lex.h"
+#include <iostream>
+#include <iomanip>
+
+#define OUTPUT_WIDTH    12 ///Formats output, pads lexemes to 12 chars
+
+void printTokenList(TokenList *tokenList)
+{
+    for (int i = 0; i < tokenList->length(); i++)
+    {
+        Token *token = (*tokenList)[i];
+        std::cout << std::setw(OUTPUT_WIDTH) << token->value() << token->type() << std::endl;
+        //printf("%-*c%c\n", OUTPUT_WIDTH, token->value(), token->type());
+    }
+}
 
 int main (int argc, char* argv[])
 {
     FILE *fo = 0;
     Lex lex;
+    TokenList *tokenList = NULL;
 
     ///Redirect STDOUT to lex.txt
     if((fo = freopen("lex.txt", "w", stdout)) != NULL)
         if (argc > 0)
-            lex.Analyze(argv[1]);
+            tokenList = lex.tokenizeFile(argv[1]);
         else
             printf("Usage: lex.exe [filename]\n");
     else
         printf("Couldn't redirect stdout to log.txt.\n");
+
+    //Print tokens and clean up
+    if (tokenList)
+    {
+        printTokenList(tokenList);
+        delete tokenList;
+    }
+
+    return 0;
 }

@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "token.h"
 
 #define MAX_ID_LENGTH   32 ///Identifier length restriction
 #define OUTPUT_WIDTH    12 ///Formats output, pads lexemes to 12 chars
@@ -36,7 +37,7 @@ enum LEX_STATE {START = 0,
 
                 RUN_TO_ENDLINE};
 
-// Forward declaration of Token class
+/// Forward declaration of Token class
 class Token;
 
 /***********************************************************************************
@@ -59,15 +60,20 @@ class Token;
 ***********************************************************************************/
 class Lex
 {
+    // Get token
+
     public:
         Lex(); //Constructor, pushes C- keywords onto Symbol Table
         ~Lex(); //destructor, does nothing
-        int Analyze(const char *filename); //Recognizes tokens, generates output
+        TokenList *Analyze(std::istream &istream, const char *filename=0); //Recognizes tokens, generates output
+        TokenList *tokenizeString(const char *input);
+        TokenList *tokenizeFile(const char *filename);
 
     private:
         std::map<std::string, std::string> SymbolTable; //Holds data about keywords
         std::vector<std::string> IncludeStack; //Prevents infinite file recursion
 
+        /// List of tokens
         std::vector<Token*> m_Tokens;
 };
 

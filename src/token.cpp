@@ -9,20 +9,24 @@
  */
 #include "token.h"
 
-Token::Token(std::string chars, std::string type)
-    :m_Chars(chars), m_Type(type)
+Token::Token(std::string value, std::string type)
+    :m_Value(value), m_Type(type)
 {
 }
 
 /*!
  * \brief Gets the value of the token's characters.
- * \return
+ * \return String representing the token characters.
  */
-std::string Token::chars() const
+std::string Token::value() const
 {
-    return m_Chars;
+    return m_Value;
 }
 
+/*!
+ * \brief Gets the token's type.
+ * \return String identifying the token type.
+ */
 std::string Token::type() const
 {
     return m_Type;
