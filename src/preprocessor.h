@@ -1,6 +1,13 @@
 #ifndef PREPROCESSOR_H
 #define PREPROCESSOR_H
 
+// #define Nnn [nnn]
+// #endif
+// #ifdef/ifndef Nnn
+// #include "nnnnnn"/<aaaaa>
+// #undef Nnn
+//
+
 class TokenList;
 class SymbolTable;
 

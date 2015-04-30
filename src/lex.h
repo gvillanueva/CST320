@@ -5,7 +5,6 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "token.h"
 
 #define MAX_ID_LENGTH   32 ///Identifier length restriction
 #define OUTPUT_WIDTH    12 ///Formats output, pads lexemes to 12 chars
@@ -14,14 +13,16 @@
 enum LEX_STATE {START = 0,
 
                 PREPROCESSOR,
-                PREPROCESSOR_DEFINE,
-                PREPROCESSOR_MACRO,
-                PREPROCESSOR_LOCAL_INCLUDE,
-                PREPROCESSOR_EXCLUDE,
+//                PREPROCESSOR_DEFINE,
+//                PREPROCESSOR_MACRO,
+//                PREPROCESSOR_LOCAL_INCLUDE,
+//                PREPROCESSOR_EXCLUDE,
 
                 OP_ADD,
                 OP_SUB,
+                OP_MUL,
                 OP_DIV,
+                OP_MOD,
                 OP_AND,
                 OP_OR,
                 OP_LEFT,
@@ -35,10 +36,14 @@ enum LEX_STATE {START = 0,
                 ID,
                 CONSTANT,
 
+                STRING,
+                STRING_ESCAPE,
+
                 RUN_TO_ENDLINE};
 
 /// Forward declaration of Token class
-class Token;
+class TokenList;
+class SymbolTable;
 
 /***********************************************************************************
 * Class: Lex
@@ -63,18 +68,16 @@ class Lex
     // Get token
 
     public:
-        Lex(); //Constructor, pushes C- keywords onto Symbol Table
+        Lex();
+        Lex(const SymbolTable &symbolTable); //Constructor, pushes C- keywords onto Symbol Table
         ~Lex(); //destructor, does nothing
         TokenList *Analyze(std::istream &istream, const char *filename=0); //Recognizes tokens, generates output
         TokenList *tokenizeString(const char *input);
         TokenList *tokenizeFile(const char *filename);
 
     private:
-        std::map<std::string, std::string> SymbolTable; //Holds data about keywords
+        const SymbolTable &m_SymbolTable;
         std::vector<std::string> IncludeStack; //Prevents infinite file recursion
-
-        /// List of tokens
-        std::vector<Token*> m_Tokens;
 };
 
 #endif//LEX_H

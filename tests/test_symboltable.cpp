@@ -44,7 +44,7 @@ void TestSymbolTable::test_popScope_atGlobal_scopeEqualsZero()
 void TestSymbolTable::test_addSymbol_atGlobal_newSymbol()
 {
     SymbolTable st;
-    st.addSymbol("temp", ET_INTEGER, EU_VARIABLENAME, 0);
+    st.addSymbol("temp", ET_INTEGER, EU_VARIABLE, 0);
     assert(st.findSymbol("temp").isNull() != true);
 }
 
@@ -55,8 +55,8 @@ void TestSymbolTable::test_addSymbol_atGlobal_newSymbol()
 void TestSymbolTable::test_addSymbol_atGlobal_duplicateSymbolName()
 {
     SymbolTable st;
-    st.addSymbol("temp", ET_INTEGER, EU_VARIABLENAME, 0);
-    assert(st.addSymbol("temp", ET_INTEGER, EU_VARIABLENAME, 0) == false);
+    st.addSymbol("temp", ET_INTEGER, EU_VARIABLE, 0);
+    assert(st.addSymbol("temp", ET_INTEGER, EU_VARIABLE, 0) == false);
 }
 
 /*!
@@ -66,10 +66,10 @@ void TestSymbolTable::test_addSymbol_atGlobal_duplicateSymbolName()
 void TestSymbolTable::test_addSymbol_differentScopes_allowed()
 {
     SymbolTable st;
-    st.addSymbol("test", ET_INTEGER, EU_VARIABLENAME, 0);
+    st.addSymbol("test", ET_INTEGER, EU_VARIABLE, 0);
     SymbolPtr test1 = st.findSymbol("test");
     st.pushScope();
-    st.addSymbol("test", ET_CHAR, EU_VARIABLENAME, 0);
+    st.addSymbol("test", ET_CHAR, EU_VARIABLE, 0);
     SymbolPtr test2 = st.findSymbol("test");
 
     // Ensure symbol names are identical
@@ -87,7 +87,7 @@ void TestSymbolTable::test_addSymbol_differentScopes_allowed()
 void TestSymbolTable::test_removeSymbol_fromGlobalScope()
 {
     SymbolTable st;
-    st.addSymbol("temp", ET_INTEGER, EU_VARIABLENAME, 0);
+    st.addSymbol("temp", ET_INTEGER, EU_VARIABLE, 0);
     SymbolPtr symbol = st.findSymbol("temp");
     assert(symbol.isNull() != true);// Ensure the symbol has been successfully added
     st.removeSymbol(symbol.name());
@@ -102,7 +102,7 @@ void TestSymbolTable::test_removeSymbol_fromGlobalScope()
 void TestSymbolTable::test_removeSymbol_fromGlobalScope_atDifferentScope()
 {
     SymbolTable st;
-    st.addSymbol("temp", ET_INTEGER, EU_VARIABLENAME, 0);
+    st.addSymbol("temp", ET_INTEGER, EU_VARIABLE, 0);
     SymbolPtr symbol = st.findSymbol("temp");
 
     // Ensure the symbol has been successfully added
@@ -123,14 +123,14 @@ void TestSymbolTable::test_removeSymbol_fromGlobalScope_atDifferentScope()
 void TestSymbolTable::test_removeSymbol_fromScope2_reusedSymbolName()
 {
     SymbolTable st;
-    st.addSymbol("temp", ET_INTEGER, EU_VARIABLENAME, 0);
+    st.addSymbol("temp", ET_INTEGER, EU_VARIABLE, 0);
     SymbolPtr temp1 = st.findSymbol("temp");
 
     // Ensure the symbol has been successfully added
     assert(temp1.isNull() != true);
 
     st.pushScope();
-    st.addSymbol("temp", ET_CHAR, EU_VARIABLENAME, 0);
+    st.addSymbol("temp", ET_CHAR, EU_VARIABLE, 0);
     SymbolPtr temp2 = st.findSymbol("temp");
 
     // Ensure temp symbol in new scope is created
@@ -154,13 +154,13 @@ void TestSymbolTable::test_removeSymbol_fromScope2_reusedSymbolName()
 void TestSymbolTable::test_findSymbol_atGlobal_succeeds()
 {
     SymbolTable st;
-    st.addSymbol("test", ET_INTEGER, EU_VARIABLENAME, 0);
+    st.addSymbol("test", ET_INTEGER, EU_VARIABLE, 0);
     SymbolPtr symbol = st.findSymbol("test");
 
     // Ensure all the data matches
     assert(!strcmp(symbol.name(), "test"));
     assert(symbol.type() == ET_INTEGER);
-    assert(symbol.use() == EU_VARIABLENAME);
+    assert(symbol.use() == EU_VARIABLE);
     assert(symbol.constData() == 0);
 }
 
@@ -180,10 +180,10 @@ void TestSymbolTable::test_findSymbol_atGlobal_undeclaredSymbol()
 void TestSymbolTable::test_findSymbol_differentScopes_notEqual()
 {
     SymbolTable st;
-    st.addSymbol("test", ET_INTEGER, EU_VARIABLENAME, 0);
+    st.addSymbol("test", ET_INTEGER, EU_VARIABLE, 0);
     SymbolPtr test1 = st.findSymbol("test");
     st.pushScope();
-    st.addSymbol("test", ET_INTEGER, EU_VARIABLENAME, 0);
+    st.addSymbol("test", ET_INTEGER, EU_VARIABLE, 0);
     SymbolPtr test2 = st.findSymbol("test");
 
     assert(test1 != test2);

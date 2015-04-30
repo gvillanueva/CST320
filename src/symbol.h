@@ -15,6 +15,7 @@
  */
 enum E_TYPE
 {
+    ET_VOID,
     ET_CHAR,
     ET_SHORT,
     ET_INTEGER,
@@ -26,10 +27,10 @@ enum E_TYPE
  */
 enum E_USE
 {
-    EU_VARIABLENAME,
-    EU_CLASSNAME,
-    EU_FUNCTIONNAME,
-    EU_TYPENAME,
+    EU_KEYWORD,
+    EU_VARIABLE,
+    EU_FUNCTION,
+    EU_TYPE,
     EU_CONSTANT
 };
 

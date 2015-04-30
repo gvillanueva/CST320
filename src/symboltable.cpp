@@ -113,7 +113,7 @@ void SymbolTable::removeSymbol(const char *symbolName)
  * If no symbol in any scope matches /p symbolName, the function returns a
  * wrapper around NULL.
  */
-SymbolPtr SymbolTable::findSymbol(const char *symbolName)
+SymbolPtr SymbolTable::findSymbol(const char *symbolName) const
 {
     SymbolTableScope *scope = m_pHeadScope;
     SymbolPtr symbol(0);
@@ -133,7 +133,7 @@ SymbolPtr SymbolTable::findSymbol(const char *symbolName)
  * \brief   Instantiates a new SymbolTableScope object.
  */
 SymbolTable::SymbolTableScope::SymbolTableScope()
-    :m_pHeadSymbol(0), m_pNextScope(0)
+    :m_pNextScope(0), m_pHeadSymbol(0)
 {
 }
 

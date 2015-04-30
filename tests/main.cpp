@@ -23,6 +23,8 @@
 ***********************************************************************************/
 #include <stdio.h>
 #include "../src/lex.h"
+#include "../src/token.h"
+#include "../src/symboltable.h"
 #include <iostream>
 #include <iomanip>
 
@@ -38,20 +40,40 @@ void printTokenList(TokenList *tokenList)
     }
 }
 
+void initSymbolTable(SymbolTable &symbolTable)
+{
+    symbolTable.addSymbol("bool", ET_VOID, EU_KEYWORD, NULL);
+    symbolTable.addSymbol("break", ET_VOID, EU_KEYWORD, NULL);
+    symbolTable.addSymbol("else", ET_VOID, EU_KEYWORD, NULL);
+    symbolTable.addSymbol("false", ET_VOID, EU_KEYWORD, NULL);
+    symbolTable.addSymbol("if", ET_VOID, EU_KEYWORD, NULL);
+    symbolTable.addSymbol("int", ET_VOID, EU_KEYWORD, NULL);
+    symbolTable.addSymbol("return", ET_VOID, EU_KEYWORD, NULL);
+    symbolTable.addSymbol("true", ET_VOID, EU_KEYWORD, NULL);
+    symbolTable.addSymbol("void", ET_VOID, EU_KEYWORD, NULL);
+    symbolTable.addSymbol("while", ET_VOID, EU_KEYWORD, NULL);
+}
+
 int main (int argc, char* argv[])
 {
     FILE *fo = 0;
-    Lex lex;
     TokenList *tokenList = NULL;
 
+    // Create and populate symbol table for compiler components
+    SymbolTable symbolTable;
+    initSymbolTable(symbolTable);
+
+    // Create a lexical analyzer and pass the symbol table to it
+    Lex lex(symbolTable);
+
     ///Redirect STDOUT to lex.txt
-    if((fo = freopen("lex.txt", "w", stdout)) != NULL)
+//    if((fo = freopen("lex.txt", "w", stdout)) != NULL)
         if (argc > 0)
             tokenList = lex.tokenizeFile(argv[1]);
         else
             printf("Usage: lex.exe [filename]\n");
-    else
-        printf("Couldn't redirect stdout to log.txt.\n");
+//    else
+//        printf("Couldn't redirect stdout to log.txt.\n");
 
     //Print tokens and clean up
     if (tokenList)

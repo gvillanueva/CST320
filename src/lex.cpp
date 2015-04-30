@@ -1,5 +1,6 @@
 #include "lex.h"
 #include "token.h"
+#include "symboltable.h"
 #include <cstring>
 #include <cstdio>
 #include <stdio.h>
@@ -20,18 +21,9 @@
 *	Purpose:	Adds C- keywords to symbol table. Indicates whether or not a parsed
 *               identifier is a keyword.
 ***********************************************************************************/
-Lex::Lex()
+Lex::Lex(const SymbolTable &symbolTable)
+    :m_SymbolTable(symbolTable)
 {
-    SymbolTable["bool"] = "keyword";
-    SymbolTable["break"] = "keyword";
-    SymbolTable["else"] = "keyword";
-    SymbolTable["false"] = "keyword";
-    SymbolTable["if"] = "keyword";
-    SymbolTable["int"] = "keyword";
-    SymbolTable["return"] = "keyword";
-    SymbolTable["true"] = "keyword";
-    SymbolTable["void"] = "keyword";
-    SymbolTable["while"] = "keyword";
 }
 
 /***********************************************************************************
@@ -69,17 +61,19 @@ TokenList *Lex::tokenizeFile(const char *filename)
     if (!filename)
         return NULL;
 
-    for (int i = 0; i < IncludeStack.size(); i++)
+    for (size_t i = 0; i < IncludeStack.size(); i++)
         if (IncludeStack[i] == filename)
             return NULL;
 
     IncludeStack.push_back(filename);
     std::ifstream stream(filename);
 
-    return Analyze(stream, filename);
+    TokenList *tokens = Analyze(stream, filename);
 
     if (!IncludeStack.empty())
         IncludeStack.pop_back();
+
+    return tokens;
 }
 
 /***********************************************************************************
@@ -99,7 +93,7 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
     LEX_STATE state = START;
     int line = 1; ///Variables to track the current line and column position
     char ch  = 0; ///Current symbol being parsed by the lexical analyzer
-    int ret  = 0; ///Return value, 0 for success, anything else for errors
+    //int ret  = 0; ///Return value, 0 for success, anything else for errors
 
     std::string token; ///Token being parsed
     std::string expansion; ///#define macro expansion
@@ -166,6 +160,11 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                     state = OP_NOT;
                 else if (ch == '=')
                     state = OP_ASSIGN;
+                else if (ch == '"')
+                {
+                    token.push_back(ch);
+                    state = STRING;
+                }
                 ///Ignore whitespace, increment col counter, increment line counter on newlines
                 else if (isspace(ch))
                 {
@@ -176,6 +175,29 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                     printf("Illegal symbol %c encountered at %s(%i).\n", ch, filename, line);
             break;
 #endif
+            case STRING:
+                if (ch == '"')
+                {
+                    token.push_back(ch);
+                    tokens->add(new Token(token, "STRING"));
+                    token.clear();
+                    state = START;
+                }
+                else if (isprint(ch))
+                {
+                    token.push_back(ch);
+                    if (ch == '\\')
+                        state = STRING_ESCAPE;
+                }
+                else
+                    printf("Illegal symbol %c encountered at %s(%i).\n", ch, filename, line);
+            break;
+            case STRING_ESCAPE:
+                if (isprint(ch))
+                    state = STRING;
+                else
+                    printf("Illegal symbol %c encountered at %s(%i).\n", ch, filename, line);
+            break;
 #ifndef TWO_OR_THREE_PART_OPS
             ///Operator tokens that may or may not be more than one character
             case OP_ADD:
@@ -210,10 +232,31 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                 state = START;
             }
             break;
+            case OP_MUL:
+            {
+                if (ch == '=')
+                {
+                    tokens->add(new Token("*=", "MULASSIGN"));
+                    printf("%-*s*=\n", OUTPUT_WIDTH, "MULASSIGN");
+                }
+                else
+                {
+                    tokens->add(new Token("*", "MULOP"));
+                    printf("%-*s*\n", OUTPUT_WIDTH, "MULOP");
+                    istream.putback(ch);
+                }
+                state = START;
+            }
+            break;
             case OP_DIV:
             {
                 if (ch == '/')
                     state = COMMENTS_SINGLE_LINE;
+                else if (ch == '=')
+                {
+                    tokens->add(new Token("/=", "MULASSIGN"));
+                    printf("%-*s/=\n", OUTPUT_WIDTH, "MULASSIGN");
+                }
                 else
                 {
                     tokens->add(new Token("/", "MULOP"));
@@ -221,6 +264,22 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                     istream.putback(ch);
                     state = START;
                 }
+            }
+            break;
+            case OP_MOD:
+            {
+                if (ch == '=')
+                {
+                    tokens->add(new Token("%=", "MODASSIGN"));
+                    printf("%-*s%%=\n", OUTPUT_WIDTH, "MODASSIGN");
+                }
+                else
+                {
+                    tokens->add(new Token("%", "MULOP"));
+                    printf("%-*s%%\n", OUTPUT_WIDTH, "MULOP");
+                    istream.putback(ch);
+                }
+                state = START;
             }
             break;
             case OP_AND:
@@ -335,167 +394,176 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                     token.push_back(ch);
                 else
                 {
-                    ///#define token, need to get the expansion
-                    if (token == "define")
+                    if (token == "define" || token == "include" ||
+                        token == "ifdef" || token == "ifndef" ||
+                        token == "undef" || token == "endif")
                     {
-                        while (isspace(ch))
-                            istream.get(ch);
-                        istream.putback(ch);
-                        state = PREPROCESSOR_DEFINE;
-                    }
-                    ///#include token, need to get the filename/search path
-                    else if (token == "include")
-                    {
-                        while ((ch != '\"' || ch != '<') && isspace(ch) && ch != '\n')
-                            istream.get(ch);
-                        if (ch == '\"')
-                            state = PREPROCESSOR_LOCAL_INCLUDE;
-                        else
-                        {
-                            printf("#include expects \"FILENAME\". %s(%i)\n", filename, line);
-                            state = START;
-                        }
-                    }
-                    ///#ifdef token, get macro name
-                    else if (token == "ifdef")
-                    {
-                        while (isspace(ch) && ch != '\n')
-                            istream.get(ch);
-                        while (isalnum(ch) || ch == '_')
-                        {
-                            macro.push_back(ch);
-                            istream.get(ch);
-                        }
-                        ///If macro exists, continue happily
-                        if (SymbolTable["#"+macro] == "PREPROCESSOR_FLAG")
-                            state = RUN_TO_ENDLINE;
-                        else
-                        ///Run until #endif
-                            state = PREPROCESSOR_EXCLUDE;
-                        macro.clear();
-                    }
-                    ///#ifndef token, get macro name
-                    else if (token == "ifndef")
-                    {
-                        while (isspace(ch) && ch != '\n')
-                            istream.get(ch);
-                        while (isalnum(ch) || ch == '_')
-                        {
-                            macro.push_back(ch);
-                            istream.get(ch);
-                        }
-                        ///If macro doesn't exists, continue happily
-                        if (SymbolTable["#"+macro] == "PREPROCESSOR_FLAG")
-                            state = PREPROCESSOR_EXCLUDE;
-                        else
-                        ///Run until #endif
-                            state = RUN_TO_ENDLINE;
-                        macro.clear();
-                    }
-                    ///#endif, run to endline
-                    else if (token == "endif")
-                    {
-                        printf("WARNING: #endif with no beginning #ifdef or #ifndef\n");
-                        state = RUN_TO_ENDLINE;
-                    }
-                    else
-                    {
-                        printf("Invalid preprocessing directive %s. %s(%i)\n", token.c_str(), filename, line);
-                        state = RUN_TO_ENDLINE;
-                    }
-                    token.clear();
-                }
-            break;
-            case PREPROCESSOR_DEFINE:
-                if (isalnum(ch) || ch == '_')
-                    macro.push_back(ch);
-                else
-                    if (ch == '\n')
-                    {
-                        SymbolTable["#"+macro] = "PREPROCESSOR_FLAG";
-                        macro.clear();
+                        tokens->add(new Token(token, "PREPROCESSOR"));
+                        token.clear();
                         state = START;
                     }
-                    else if (!isspace(ch))
-                    {
-                        printf("Macro names must be identifiers. %s(%i)\n", filename, line);
-                        macro.clear();
-                        state = RUN_TO_ENDLINE;
-                    }
-                    else
-                    {
-                        while (isspace(ch))
-                            istream.get(ch);
-                        state = PREPROCESSOR_MACRO;
-                    }
-                break;
-            ///Currently allows only object-like macros
-            case PREPROCESSOR_MACRO:
-                if (isalnum(ch))
-                    expansion.push_back(ch);
-                else
-                {
-                    if (isspace(ch))
-                    {
-                        SymbolTable[macro] = expansion;
-                        istream.putback(ch);
-                    }
-                    else
-                        printf("Macro expansions may only be alphanumeric. %s(%i)\n", filename, line);
-                    macro.clear();
-                    expansion.clear();
-                    state = RUN_TO_ENDLINE;
-                }
-                break;
-            ///Concatenate the current file path to the #include filename
-            case PREPROCESSOR_LOCAL_INCLUDE:
-                if (ch == '\"')
-                {
-                    char *directory = NULL;
 
-                    // If filename undefined, use the current working directory
-                    if (!filename)
-                        directory = getcwd(NULL, 0);
-                    else
-                    {
-                        directory = const_cast<char*>(strrchr(filename, '\\'));
-                        if (directory)
-                        {
-                            *directory = '\0';
-                            //inclFile = directory;
-                            *directory = '\\';
-                        }
-                    }
-                    TokenList *includedTokens = tokenizeFile(token.c_str());
-                    includedTokens->move(tokens);
-                    delete includedTokens;
-                    token.clear();
-                    state = RUN_TO_ENDLINE;
+                    ///#define token, need to get the expansion
+//                    if (token == "define")
+//                    {
+//                        while (isspace(ch))
+//                            istream.get(ch);
+//                        istream.putback(ch);
+//                        state = PREPROCESSOR_DEFINE;
+//                    }
+//                    ///#include token, need to get the filename/search path
+//                    else if (token == "include")
+//                    {
+//                        while ((ch != '\"' || ch != '<') && isspace(ch) && ch != '\n')
+//                            istream.get(ch);
+//                        if (ch == '\"')
+//                            state = PREPROCESSOR_LOCAL_INCLUDE;
+//                        else
+//                        {
+//                            printf("#include expects \"FILENAME\". %s(%i)\n", filename, line);
+//                            state = START;
+//                        }
+//                    }
+//                    ///#ifdef token, get macro name
+//                    else if (token == "ifdef")
+//                    {
+//                        while (isspace(ch) && ch != '\n')
+//                            istream.get(ch);
+//                        while (isalnum(ch) || ch == '_')
+//                        {
+//                            macro.push_back(ch);
+//                            istream.get(ch);
+//                        }
+//                        ///If macro exists, continue happily
+//                        if (SymbolTable["#"+macro] == "PREPROCESSOR_FLAG")
+//                            state = RUN_TO_ENDLINE;
+//                        else
+//                        ///Run until #endif
+//                            state = PREPROCESSOR_EXCLUDE;
+//                        macro.clear();
+//                    }
+//                    ///#ifndef token, get macro name
+//                    else if (token == "ifndef")
+//                    {
+//                        while (isspace(ch) && ch != '\n')
+//                            istream.get(ch);
+//                        while (isalnum(ch) || ch == '_')
+//                        {
+//                            macro.push_back(ch);
+//                            istream.get(ch);
+//                        }
+//                        ///If macro doesn't exists, continue happily
+//                        if (SymbolTable["#"+macro] == "PREPROCESSOR_FLAG")
+//                            state = PREPROCESSOR_EXCLUDE;
+//                        else
+//                        ///Run until #endif
+//                            state = RUN_TO_ENDLINE;
+//                        macro.clear();
+//                    }
+//                    ///#endif, run to endline
+//                    else if (token == "endif")
+//                    {
+//                        printf("WARNING: #endif with no beginning #ifdef or #ifndef\n");
+//                        state = RUN_TO_ENDLINE;
+//                    }
+//                    else
+//                    {
+//                        printf("Invalid preprocessing directive %s. %s(%i)\n", token.c_str(), filename, line);
+//                        state = RUN_TO_ENDLINE;
+//                    }
+//                    token.clear();
                 }
-                else if (ch == '\n')
-                {
-                    printf("#include expects \"FILENAME\". %s(%i)\n", filename, line);
-                    token.clear();
-                    state = START;
-                }
-                else
-                    token.push_back(ch);
-                break;
-            ///Exclude source code until #endif
-            case PREPROCESSOR_EXCLUDE:
-                if (ch != '#')
-                {
-                    while (!isspace(ch))
-                    {
-                        istream.get(ch);
-                        token.push_back(ch);
-                    }
-                    if (token == "endif")
-                        state = RUN_TO_ENDLINE;
-                    else
-                        token.clear();
-                }
-                break;
+            break;
+//            case PREPROCESSOR_DEFINE:
+//                if (isalnum(ch) || ch == '_')
+//                    macro.push_back(ch);
+//                else
+//                    if (ch == '\n')
+//                    {
+//                        SymbolTable["#"+macro] = "PREPROCESSOR_FLAG";
+//                        macro.clear();
+//                        state = START;
+//                    }
+//                    else if (!isspace(ch))
+//                    {
+//                        printf("Macro names must be identifiers. %s(%i)\n", filename, line);
+//                        macro.clear();
+//                        state = RUN_TO_ENDLINE;
+//                    }
+//                    else
+//                    {
+//                        while (isspace(ch))
+//                            istream.get(ch);
+//                        state = PREPROCESSOR_MACRO;
+//                    }
+//                break;
+//            ///Currently allows only object-like macros
+//            case PREPROCESSOR_MACRO:
+//                if (isalnum(ch))
+//                    expansion.push_back(ch);
+//                else
+//                {
+//                    if (isspace(ch))
+//                    {
+//                        SymbolTable[macro] = expansion;
+//                        istream.putback(ch);
+//                    }
+//                    else
+//                        printf("Macro expansions may only be alphanumeric. %s(%i)\n", filename, line);
+//                    macro.clear();
+//                    expansion.clear();
+//                    state = RUN_TO_ENDLINE;
+//                }
+//                break;
+//            ///Concatenate the current file path to the #include filename
+//            case PREPROCESSOR_LOCAL_INCLUDE:
+//                if (ch == '\"')
+//                {
+//                    char *directory = NULL;
+
+//                    // If filename undefined, use the current working directory
+//                    if (!filename)
+//                        directory = getcwd(NULL, 0);
+//                    else
+//                    {
+//                        directory = const_cast<char*>(strrchr(filename, '\\'));
+//                        if (directory)
+//                        {
+//                            *directory = '\0';
+//                            //inclFile = directory;
+//                            *directory = '\\';
+//                        }
+//                    }
+//                    TokenList *includedTokens = tokenizeFile(token.c_str());
+//                    includedTokens->move(tokens);
+//                    delete includedTokens;
+//                    token.clear();
+//                    state = RUN_TO_ENDLINE;
+//                }
+//                else if (ch == '\n')
+//                {
+//                    printf("#include expects \"FILENAME\". %s(%i)\n", filename, line);
+//                    token.clear();
+//                    state = START;
+//                }
+//                else
+//                    token.push_back(ch);
+//                break;
+//            ///Exclude source code until #endif
+//            case PREPROCESSOR_EXCLUDE:
+//                if (ch != '#')
+//                {
+//                    while (!isspace(ch))
+//                    {
+//                        istream.get(ch);
+//                        token.push_back(ch);
+//                    }
+//                    if (token == "endif")
+//                        state = RUN_TO_ENDLINE;
+//                    else
+//                        token.clear();
+//                }
+//                break;
 #endif
 #ifndef KEYWORD_OR_ID
             ///Until we find a number, we might still have a keyword
@@ -516,7 +584,7 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                     else
                     {
                         ///If the token doesn't exist in the symbol table, it's a keyword
-                        if (SymbolTable.find(token) == SymbolTable.end())
+                        if (m_SymbolTable.findSymbol(token.c_str()).isNull())
                         {
                             tokens->add(new Token(token, "ID"));
                             printf("%-*s%s\n", OUTPUT_WIDTH, "ID", token.c_str());
@@ -605,7 +673,7 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
         switch (state)
         {
             default:
-                ret = 1;
+                //ret = 1;
                 break;
         }
 

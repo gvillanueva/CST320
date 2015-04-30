@@ -235,7 +235,7 @@ public:
 
         TokenNode *tokenNode = m_FirstTokenNode;
         for (int i = 0; i < index; i++)
-            tokenNode = m_FirstTokenNode->nextTokenNode();
+            tokenNode = tokenNode->nextTokenNode();
         return tokenNode->token();
     }
 

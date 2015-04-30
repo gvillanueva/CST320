@@ -42,7 +42,7 @@ public:
     void removeSymbol(const char *symbolName);
 
     /// Finds a symbol in the symbol table and returns it.
-    SymbolPtr findSymbol(const char *symbolName);
+    SymbolPtr findSymbol(const char *symbolName) const;
 
 private:
     /*!
