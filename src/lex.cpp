@@ -1,10 +1,16 @@
+/*!
+ * \author      Giancarlo Villanueva
+ * \date        Created, 4/21/2015
+ *              Modified, 4/30/2015
+ * \ingroup     CST320 - Lab1c
+ * \file        lex.cpp
+ *
+ * \brief       Defines the structure of the Lex class.
+ */
 #include "lex.h"
 #include "token.h"
 #include "tokenlist.h"
 #include "symboltable.h"
-#include <cstring>
-#include <cstdio>
-#include <stdio.h>
 #include <sstream>
 #include <fstream>
 
@@ -58,18 +64,15 @@ TokenList *Lex::tokenizeFile(const char *filename)
     return tokens;
 }
 
-/***********************************************************************************
-*	  Entry:	Populated symbol table
-*	   Exit:	Output generated to STDOUT. If analysis is error-free, output is
-*               ready to be fed into the Syntax Analyzer.
-*	Purpose:	Performs lexical analysis/preprocessor directives on a given file.
-*               Input from the specified filename should contain no strange Unicode
-*               symbols or an error will be generated. Input should also contain no
-*               lexemes outside of the C- grammar.
-*               Output generated contains one token and its lexeme per line. Output
-*               is formatted; lexeme comes first with a width of 12, token comes
-*               second.
-***********************************************************************************/
+/*!
+ * \brief Reads characters from input stream to form known tokens.
+ * \param istream   An input stream to tokenize.
+ * \param filename  Name of the file we may be parsing.
+ * \return Pointer to a list of tokens found in the input stream.
+ *
+ * This function needs a populated symbol table to function correctly. You must
+ * populate the table with keywords, if they exist.
+ */
 TokenList *Lex::Analyze(std::istream &istream, const char *filename)
 {
     LEX_STATE state = START;

@@ -1,3 +1,12 @@
+/*!
+ * \author      Giancarlo Villanueva
+ * \date        Created, 4/21/2015
+ *              Modified, 4/30/2015
+ * \ingroup     CST320 - Lab1c
+ * \file        lex.h
+ *
+ * \brief       Declares the structure of the Lex classes.
+ */
 #ifndef LEX_H
 #define LEX_H
 
@@ -34,40 +43,31 @@ enum LEX_STATE {START = 0,
 
                 RUN_TO_ENDLINE};
 
-/// Forward declaration of Token class
+/// Forward declarations
 class TokenList;
 class SymbolTable;
 
-/***********************************************************************************
-* Class: Lex
-*
-* Constructors:
-*   Lex()
-*       Initializes Lexical Analyzer by adding C- keywords to the Symbol Table.
-*
-* Mutators:
-*   ~Lex()
-*       Default destructor, included for sanity's sake.
-*
-* Methods:
-*   Analyze()
-*       Engine for the lexical analyzer. Reads character by character to determine
-*       token eligibility for the C- programming language. If token is recognized,
-*       outputs lexeme and token to STDOUT. If token is unrecognized, an error
-*       message is written to STDOUT.
-***********************************************************************************/
+/*!
+ * \brief The Lex class tokenizes an input file according to the LLC language.
+ */
 class Lex
 {
-    // Get token
+public:
+    /// Constructs a new Lex object.
+    Lex(const SymbolTable &symbolTable);
 
-    public:
-        Lex(const SymbolTable &symbolTable); //Constructor, pushes C- keywords onto Symbol Table
-        TokenList *Analyze(std::istream &istream, const char *filename=0); //Recognizes tokens, generates output
-        TokenList *tokenizeString(const char *input);
-        TokenList *tokenizeFile(const char *filename);
+    /// Tokenizes an input stream.
+    TokenList *Analyze(std::istream &istream, const char *filename=0);
 
-    private:
-        const SymbolTable &m_SymbolTable;
+    /// Tokenizes a string.
+    TokenList *tokenizeString(const char *input);
+
+    /// Tokenizes a file.
+    TokenList *tokenizeFile(const char *filename);
+
+private:
+    /// Reference to a constant SymbolTable object.
+    const SymbolTable &m_SymbolTable;
 };
 
 #endif//LEX_H
