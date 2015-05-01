@@ -10,10 +10,6 @@
 enum LEX_STATE {START = 0,
 
                 PREPROCESSOR,
-//                PREPROCESSOR_DEFINE,
-//                PREPROCESSOR_MACRO,
-//                PREPROCESSOR_LOCAL_INCLUDE,
-//                PREPROCESSOR_EXCLUDE,
 
                 OP_ADD,
                 OP_SUB,
