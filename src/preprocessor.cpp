@@ -20,9 +20,6 @@ void Preprocessor::process(TokenList &tokens)
     // int implies a unit of program maximum length of 2 billion tokens
     for (int i = 0; i < tokens.length(); i++)
     {
-        if (tokens[i]->type() != "PREPROCESSOR")
-            continue;
-
         // Maintain pointer to token and remove proprocessor token from list
         Token *token = tokens[i];
         tokens.remove(token);
@@ -49,11 +46,23 @@ void Preprocessor::process(TokenList &tokens)
             // Add a preprocessor macro symbol, with const value if value exists
             m_SymbolTable.addSymbol(macro->value().c_str(), ET_VOID, EU_MACRO,
                                     value ? value->value().c_str() : NULL);
+            delete macro;
+            if (value) delete value;
+            i--;
         }
         else if (token->value() == "#undef")
         {
-            // #undef Nnn
-            // remove MACRO entry from table
+            // Look an identifier to name the macro
+            if (tokens[i]->type() != "ID")
+            {
+                printf("no macro name given in #define directive\n");
+                continue;
+            }
+            Token *macro = tokens[i];
+            tokens.remove(macro);
+            m_SymbolTable.removeSymbol(macro->value().c_str());
+            delete macro;
+            i--;
         }
         else if (token->value() == "#ifdef" ||
                  token->value() == "#ifndef")
@@ -70,10 +79,13 @@ void Preprocessor::process(TokenList &tokens)
             tokens.remove(macro);
 
             SymbolPtr symbol = m_SymbolTable.findSymbol(macro->value().c_str());
-            if (symbol.isNull() ^ nullPasses)
-                removeTokensUntilEndif(i, tokens);
+            if (symbol.isNull() ^ nullPasses) {
+                if (!removeTokensUntilEndif(i, tokens))
+                    printf("unterminated %s\n", token->value().c_str());
+            }
             else
                 m_IfPreproc = true;
+            delete macro;
         }
         else if (token->value() == "#endif")
         {
@@ -119,7 +131,7 @@ void Preprocessor::process(TokenList &tokens)
             SymbolPtr symbol = m_SymbolTable.findSymbol(token->value().c_str());
             if (!symbol.isNull())
             {
-
+                token->type()
             }
         }
 
@@ -127,20 +139,23 @@ void Preprocessor::process(TokenList &tokens)
     }
 }
 
-void Preprocessor::removeTokensUntilEndif(int i, TokenList &tokens)
+bool Preprocessor::removeTokensUntilEndif(int i, TokenList &tokens)
 {
-    while (i < tokens.length())
+    bool bEndif = tokens[i]->value() == "#endif";
+    while (i < tokens.length() && !bEndif)
     {
         Token *token = tokens[i];
-        if (token->value() == "#endif")
-            break;
-
         tokens.remove(tokens[i]);
         delete token;
+        bEndif = tokens[i]->value() == "#endif";
     }
 
-    Token *endif = tokens[i];
-    tokens.remove(tokens[i]);
-    delete endif;
+    if (bEndif)
+    {
+        Token *endif = tokens[i];
+        tokens.remove(tokens[i]);
+        delete endif;
+    }
 
+    return bEndif;
 }

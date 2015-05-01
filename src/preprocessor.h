@@ -19,7 +19,7 @@ public:
     void process(TokenList &tokens);
 
 private:
-    void removeTokensUntilEndif(int i, TokenList &tokens);
+    bool removeTokensUntilEndif(int i, TokenList &tokens);
 
     SymbolTable &m_SymbolTable;
     std::vector<std::string> IncludeStack; //Prevents infinite file recursion
