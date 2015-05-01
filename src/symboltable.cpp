@@ -76,7 +76,8 @@ int SymbolTable::scope()
  * \param   data    The constant data for the new symbol.
  * \return  true if symbol was added, otherwise false.
  */
-bool SymbolTable::addSymbol(const char *name, E_TYPE type, E_USE use, void *data)
+bool SymbolTable::addSymbol(const char *name, E_TYPE type, E_USE use,
+                            const char *data)
 {
     return m_pHeadScope->addSymbol(name, type, use, data);
 }
@@ -161,7 +162,7 @@ SymbolTable::SymbolTableScope::~SymbolTableScope()
  * \return  true if symbol was added, otherwise false.
  */
 bool SymbolTable::SymbolTableScope::addSymbol(const char *name, E_TYPE type,
-                                              E_USE use, void *data)
+                                              E_USE use, const char *data)
 {
     if (!findSymbol(name).isNull())
         return false;

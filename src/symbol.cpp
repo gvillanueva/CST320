@@ -17,7 +17,7 @@
  * \param   use         The use for the symbol.
  * \param   constData   The constant data which the symbol may represent.
  */
-Symbol::Symbol(const char *name, E_TYPE type, E_USE use, void *constData)
+Symbol::Symbol(const char *name, E_TYPE type, E_USE use, const char *constData)
     :m_pNextSymbol(0), m_pPrevSymbol(0), m_pName(0), m_ConstData(0)
 {
     m_pName = new char[strlen(name) + 1];
@@ -28,7 +28,16 @@ Symbol::Symbol(const char *name, E_TYPE type, E_USE use, void *constData)
 #endif
     m_Type = type;
     m_Use = use;
-    m_ConstData = constData;
+
+    if (constData)
+    {
+        m_ConstData = new char[strlen(constData) + 1];
+#if defined(__GNUC__)
+        strcpy(m_ConstData, constData);
+#elif defined(_MSC_VER)
+        strcpy_s(m_ConstData, strlen(constData) + 1, constData);
+#endif
+    }
 }
 
 /*!
@@ -47,6 +56,8 @@ Symbol::~Symbol()
 {
     if (m_pName)
         delete []m_pName;
+    if (m_ConstData)
+        delete []m_ConstData;
 
     // Somewhere in the middle of a symbol list
     if (m_pPrevSymbol && m_pNextSymbol)
@@ -83,7 +94,7 @@ E_USE Symbol::use() const
 }
 
 /// Returns the constant data for the symbol.
-void* Symbol::constData() const
+char* Symbol::constData() const
 {
     return m_ConstData;
 }

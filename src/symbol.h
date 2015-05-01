@@ -31,7 +31,8 @@ enum E_USE
     EU_VARIABLE,
     EU_FUNCTION,
     EU_TYPE,
-    EU_CONSTANT
+    EU_CONSTANT,
+    EU_MACRO
 };
 
 /*!
@@ -43,7 +44,7 @@ class Symbol
 {
 public:
     /// Creates a new symbol object.
-    Symbol(const char *name, E_TYPE type, E_USE use, void *constData);
+    Symbol(const char *name, E_TYPE type, E_USE use, const char *constData);
 
     /// Deletes a symbol object.
     ~Symbol();
@@ -52,7 +53,7 @@ public:
     char* name() const;
     E_TYPE type() const;
     E_USE use() const;
-    void *constData() const;
+    char* constData() const;
     Symbol *prevSymbol() const;
     void setPrevSymbol(Symbol *prevSymbol);
     Symbol *nextSymbol() const;
@@ -75,7 +76,7 @@ private:
     E_USE  m_Use;
 
     /// The constant data the symbol may contain.
-    void *m_ConstData;
+    char *m_ConstData;
 };
 
 /*!

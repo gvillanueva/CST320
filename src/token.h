@@ -139,6 +139,11 @@ public:
         if (!destTokenList || !before || !m_FirstTokenNode)
             return;
 
+        // Ensure before token is in the destination token's list
+        TokenNode *beforeTokenNode = destTokenList->find(before);
+        if (!beforeTokenNode)
+            return;
+
         // Insert at tail of the list
         if (!before)
         {
@@ -153,9 +158,14 @@ public:
         }
         else
         {
-            TokenNode *beforeTokenNode = destTokenList->find(before);
             TokenNode *prevTokenNode = beforeTokenNode->prevTokenNode();
-            prevTokenNode->setNextTokenNode(m_FirstTokenNode);
+
+            // Found node is head token
+            if (!prevTokenNode)
+                destTokenList->m_FirstTokenNode = m_FirstTokenNode;
+            else
+                prevTokenNode->setNextTokenNode(m_FirstTokenNode);
+            m_LastTokenNode->setNextTokenNode(beforeTokenNode);
             beforeTokenNode->setPrevTokenNode(m_LastTokenNode);
         }
 
@@ -163,7 +173,7 @@ public:
         m_FirstTokenNode = NULL;
         m_LastTokenNode = NULL;
 
-        m_Length += destTokenList->m_Length;
+        destTokenList->m_Length += m_Length;
     }
 
     void remove(Token *token)
@@ -177,8 +187,19 @@ public:
         {
             TokenNode *prevTokenNode = tokenNode->prevTokenNode(),
                       *nextTokenNode = tokenNode->nextTokenNode();
-            prevTokenNode->setNextTokenNode(nextTokenNode);
-            nextTokenNode->setPrevTokenNode(prevTokenNode);
+
+            // Found node is head token
+            if (!prevTokenNode)
+                m_FirstTokenNode = nextTokenNode;
+            else
+                prevTokenNode->setNextTokenNode(nextTokenNode);
+
+            // Found node is tail token
+            if (!nextTokenNode)
+                m_LastTokenNode = prevTokenNode;
+            else
+                nextTokenNode->setPrevTokenNode(prevTokenNode);
+
             delete tokenNode;
         }
         m_Length--;

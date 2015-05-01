@@ -15,23 +15,13 @@
     #include <unistd.h>
 #endif
 
-/***********************************************************************************
-*	  Entry:	Empty symbol table.
-*	   Exit:	Symbol table populated with C- keywords.
-*	Purpose:	Adds C- keywords to symbol table. Indicates whether or not a parsed
-*               identifier is a keyword.
-***********************************************************************************/
+/*!
+ * \brief Instatiates a new Lex object with a SymbolTable reference.
+ * \param symbolTable   Reference to an instantiated symbol table. Doesn't have
+ *                      to be populated, but it helps.
+ */
 Lex::Lex(const SymbolTable &symbolTable)
     :m_SymbolTable(symbolTable)
-{
-}
-
-/***********************************************************************************
-*	  Entry:	n/a
-*	   Exit:	Default destructors for data members completed.
-*	Purpose:	Default destructor, added for completeness.
-***********************************************************************************/
-Lex::~Lex()
 {
 }
 
@@ -61,17 +51,8 @@ TokenList *Lex::tokenizeFile(const char *filename)
     if (!filename)
         return NULL;
 
-    for (size_t i = 0; i < IncludeStack.size(); i++)
-        if (IncludeStack[i] == filename)
-            return NULL;
-
-    IncludeStack.push_back(filename);
     std::ifstream stream(filename);
-
     TokenList *tokens = Analyze(stream, filename);
-
-    if (!IncludeStack.empty())
-        IncludeStack.pop_back();
 
     return tokens;
 }
@@ -109,8 +90,11 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
             case START:
                 ///If the  beginning of a token is a #, it is a preprocessor directive
                 if (ch == '#')
+                {
                     state = PREPROCESSOR;
-                 ///If the beginning of a token is a number, it is a constant
+                    token.push_back(ch);
+                }
+                ///If the beginning of a token is a number, it is a constant
                 else if (isdigit(ch))
                 {
                     state = CONSTANT;
@@ -394,9 +378,9 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                     token.push_back(ch);
                 else
                 {
-                    if (token == "define" || token == "include" ||
-                        token == "ifdef" || token == "ifndef" ||
-                        token == "undef" || token == "endif")
+                    if (token == "#define" || token == "#include" ||
+                        token == "#ifdef" || token == "#ifndef" ||
+                        token == "#undef" || token == "#endif")
                     {
                         tokens->add(new Token(token, "PREPROCESSOR"));
                         token.clear();

@@ -36,7 +36,7 @@ public:
     int scope();
 
     /// Adds a symbol to the symbol table at the current scope.
-    bool addSymbol(const char *name, E_TYPE type, E_USE use, void *data);
+    bool addSymbol(const char *name, E_TYPE type, E_USE use, const char *data);
 
     /// Removes a symbol from the symbol table.
     void removeSymbol(const char *symbolName);
@@ -60,7 +60,7 @@ private:
         ~SymbolTableScope();
 
         /// Adds a symbol to the scope.
-        bool addSymbol(const char *name, E_TYPE type, E_USE use, void *data);
+        bool addSymbol(const char *name, E_TYPE type, E_USE use, const char *data);
 
         /// Removes a symbol from the scope.
         bool removeSymbol(const char *symbolName);

@@ -25,6 +25,7 @@
 #include "../src/lex.h"
 #include "../src/token.h"
 #include "../src/symboltable.h"
+#include "../src/preprocessor.h"
 #include <iostream>
 #include <iomanip>
 
@@ -74,6 +75,9 @@ int main (int argc, char* argv[])
             printf("Usage: lex.exe [filename]\n");
 //    else
 //        printf("Couldn't redirect stdout to log.txt.\n");
+
+    Preprocessor preprocessor(symbolTable);
+    preprocessor.process(*tokenList);
 
     //Print tokens and clean up
     if (tokenList)

@@ -2,9 +2,6 @@
 #define LEX_H
 
 #include <iostream>
-#include <string>
-#include <map>
-#include <vector>
 
 #define MAX_ID_LENGTH   32 ///Identifier length restriction
 #define OUTPUT_WIDTH    12 ///Formats output, pads lexemes to 12 chars
@@ -68,16 +65,13 @@ class Lex
     // Get token
 
     public:
-        Lex();
         Lex(const SymbolTable &symbolTable); //Constructor, pushes C- keywords onto Symbol Table
-        ~Lex(); //destructor, does nothing
         TokenList *Analyze(std::istream &istream, const char *filename=0); //Recognizes tokens, generates output
         TokenList *tokenizeString(const char *input);
         TokenList *tokenizeFile(const char *filename);
 
     private:
         const SymbolTable &m_SymbolTable;
-        std::vector<std::string> IncludeStack; //Prevents infinite file recursion
 };
 
 #endif//LEX_H
