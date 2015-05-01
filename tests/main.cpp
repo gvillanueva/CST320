@@ -1,3 +1,16 @@
+/*!
+ * \author      Giancarlo Villanueva
+ * \date        Created, 4/21/2015
+ *              Modified, 4/30/2015
+ * \ingroup     CST320 - Lab1c
+ * \file        main.cpp
+ *
+ * \brief       Defines the high-level functions of the compiler.
+ *
+ * This program uses a separate lexical analyzer and preprocessor to complete
+ * the first two steps of compilation.
+ */
+
 /***********************************************************************************
 * Author:					Giancarlo Villanueva
 * Date Created:				May 1, 2010
@@ -24,6 +37,7 @@
 #include <stdio.h>
 #include "../src/lex.h"
 #include "../src/token.h"
+#include "../src/tokenlist.h"
 #include "../src/symboltable.h"
 #include "../src/preprocessor.h"
 #include <iostream>
@@ -31,16 +45,23 @@
 
 #define OUTPUT_WIDTH    12 ///Formats output, pads lexemes to 12 chars
 
+/*!
+ * \brief Outputs the token list to screen, for debugging.
+ * \param tokenList The list of tokens to display.
+ */
 void printTokenList(TokenList *tokenList)
 {
     for (int i = 0; i < tokenList->length(); i++)
     {
         Token *token = (*tokenList)[i];
         std::cout << std::setw(OUTPUT_WIDTH) << token->value() << token->type() << std::endl;
-        //printf("%-*c%c\n", OUTPUT_WIDTH, token->value(), token->type());
     }
 }
 
+/*!
+ * \brief Initializes keyword symbols in the symbol table.
+ * \param symbolTable   Reference to an instantiated symbol table object.
+ */
 void initSymbolTable(SymbolTable &symbolTable)
 {
     symbolTable.addSymbol("bool", ET_VOID, EU_KEYWORD, NULL);
@@ -55,9 +76,17 @@ void initSymbolTable(SymbolTable &symbolTable)
     symbolTable.addSymbol("while", ET_VOID, EU_KEYWORD, NULL);
 }
 
+/*!
+ * \brief main is the entry point into the compiler.
+ * \param argc  The number of command line arguments.
+ * \param argv  The values of the command line arguments.
+ * \return 0 if everything goes okay.  Otherwise an error code.
+ *
+ * The compiler currently accepts one command-line variable, which is the path
+ * to a file the user wants to parse.
+ */
 int main (int argc, char* argv[])
 {
-    FILE *fo = 0;
     TokenList *tokenList = NULL;
 
     // Create and populate symbol table for compiler components
@@ -67,14 +96,10 @@ int main (int argc, char* argv[])
     // Create a lexical analyzer and pass the symbol table to it
     Lex lex(symbolTable);
 
-    ///Redirect STDOUT to lex.txt
-//    if((fo = freopen("lex.txt", "w", stdout)) != NULL)
-        if (argc > 0)
-            tokenList = lex.tokenizeFile(argv[1]);
-        else
-            printf("Usage: lex.exe [filename]\n");
-//    else
-//        printf("Couldn't redirect stdout to log.txt.\n");
+    if (argc > 0)
+        tokenList = lex.tokenizeFile(argv[1]);
+    else
+        return -1;
 
     Preprocessor preprocessor(symbolTable);
     preprocessor.process(*tokenList);

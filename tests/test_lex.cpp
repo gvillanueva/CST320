@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <vector>
 #include "../src/token.h"
+#include "../src/tokenlist.h"
 #include <assert.h>
 
 void TestLex::setup()

@@ -1,17 +1,31 @@
+/*!
+ * \author      Giancarlo Villanueva
+ * \date        Created, 4/21/2015
+ *              Modified, 4/30/2015
+ * \ingroup     CST320 - Lab1c
+ * \file        preprocessor.cpp
+ *
+ * \brief       Defines the structure of the Preprocessor class.
+ */
 #include "preprocessor.h"
 #include "symboltable.h"
 #include "token.h"
+#include "tokenlist.h"
 #include <stdio.h>
 #include <string.h>
 #include "lex.h"
 
+/*!
+ * \brief Creates a preprocessor object, maintaining reference to \p symbolTable.
+ * \param symbolTable   A reference to an instantiated symbol table.
+ */
 Preprocessor::Preprocessor(SymbolTable &symbolTable)
     :m_SymbolTable(symbolTable), m_IfPreproc(false)
 {
 }
 
 /*!
- * \brief Processes preprocessor directives within \p tokens.
+ * \brief Processes preprocessor directives in the given token list.
  * \param tokens    A list of tokens which will be modified according to the
  *                  preprocessor directives it contains.
  */
@@ -78,7 +92,10 @@ void Preprocessor::process(TokenList &tokens)
             Token *macro = tokens[i];
             tokens.remove(macro);
 
+            // Look for a defined macro symbol
             SymbolPtr symbol = m_SymbolTable.findSymbol(macro->value().c_str());
+
+            // Depending on directive value, ignore tokens until #endif
             if (symbol.isNull() ^ nullPasses) {
                 if (!removeTokensUntilEndif(i, tokens))
                     printf("unterminated %s\n", token->value().c_str());
@@ -110,8 +127,8 @@ void Preprocessor::process(TokenList &tokens)
             const char *filename = path->value().substr(1, path->value().length() - 2).c_str();
             delete path;
 
-            for (size_t i = 0; i < IncludeStack.size(); i++)
-                if (IncludeStack[i] == filename)
+            for (size_t j = 0; j < IncludeStack.size(); j++)
+                if (IncludeStack[j] == filename)
                 {
                     printf("prevented duplicate include of %s\n", filename);
                     continue;
@@ -131,7 +148,7 @@ void Preprocessor::process(TokenList &tokens)
             SymbolPtr symbol = m_SymbolTable.findSymbol(token->value().c_str());
             if (!symbol.isNull())
             {
-                token->type()
+                token->type();
             }
         }
 
@@ -139,6 +156,12 @@ void Preprocessor::process(TokenList &tokens)
     }
 }
 
+/*!
+ * \brief   Private method removes tokens until and #endif token is encountered.
+ * \param i         The index of the current token.
+ * \param tokens    The list of tokens.
+ * \return  true if endif encountered; otherwise false.
+ */
 bool Preprocessor::removeTokensUntilEndif(int i, TokenList &tokens)
 {
     bool bEndif = tokens[i]->value() == "#endif";

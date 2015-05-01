@@ -121,13 +121,11 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                          ch == ',')
                 {
                     tokens->add(new Token(std::string(1, ch), std::string(1, ch)));
-                    printf("%-*c%c\n", OUTPUT_WIDTH, ch, ch);
                 }
                 else if (ch == '*' ||
                          ch == '%')
                 {
                     tokens->add(new Token(std::string(1, ch), "MULOP"));
-                    printf("%-*c%s\n", OUTPUT_WIDTH, ch, "MULOP");
                 }
                 ///The following operator symbols are ambiguous (ex: + or +=)
                 else if (ch == '+')
@@ -193,12 +191,10 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                 if (ch == '=')
                 {
                     tokens->add(new Token("+=", "ADDASSIGN"));
-                    printf("%-*s+=\n", OUTPUT_WIDTH, "ADDASSIGN");
                 }
                 else
                 {
                     tokens->add(new Token("+", "ADDOP"));
-                    printf("%-*s+\n", OUTPUT_WIDTH, "ADDOP");
                     istream.putback(ch);
                 }
                 state = START;
@@ -209,12 +205,10 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                 if (ch == '=')
                 {
                     tokens->add(new Token("-=", "SUBASSIGN"));
-                    printf("%-*s-=\n", OUTPUT_WIDTH, "SUBASSIGN");
                 }
                 else
                 {
                     tokens->add(new Token("-", "ADDOP"));
-                    printf("%-*s-\n", OUTPUT_WIDTH, "ADDOP");
                     istream.putback(ch);
                 }
                 state = START;
@@ -225,12 +219,10 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                 if (ch == '=')
                 {
                     tokens->add(new Token("*=", "MULASSIGN"));
-                    printf("%-*s*=\n", OUTPUT_WIDTH, "MULASSIGN");
                 }
                 else
                 {
                     tokens->add(new Token("*", "MULOP"));
-                    printf("%-*s*\n", OUTPUT_WIDTH, "MULOP");
                     istream.putback(ch);
                 }
                 state = START;
@@ -243,12 +235,10 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                 else if (ch == '=')
                 {
                     tokens->add(new Token("/=", "MULASSIGN"));
-                    printf("%-*s/=\n", OUTPUT_WIDTH, "MULASSIGN");
                 }
                 else
                 {
                     tokens->add(new Token("/", "MULOP"));
-                    printf("%-*s/\n", OUTPUT_WIDTH, "MULOP");
                     istream.putback(ch);
                     state = START;
                 }
@@ -259,12 +249,10 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                 if (ch == '=')
                 {
                     tokens->add(new Token("%=", "MODASSIGN"));
-                    printf("%-*s%%=\n", OUTPUT_WIDTH, "MODASSIGN");
                 }
                 else
                 {
                     tokens->add(new Token("%", "MULOP"));
-                    printf("%-*s%%\n", OUTPUT_WIDTH, "MULOP");
                     istream.putback(ch);
                 }
                 state = START;
@@ -275,7 +263,6 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                 if (ch == '&')
                 {
                     tokens->add(new Token("&&", "LOGICOP"));
-                    printf("%-*s&&\n", OUTPUT_WIDTH, "LOGICOP");
                 }
                 else
                 {
@@ -290,7 +277,6 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                 if (ch == '|')
                 {
                     tokens->add(new Token("||", "LOGICOP"));
-                    printf("%-*s||\n", OUTPUT_WIDTH, "LOGICOP");
                 }
                 else
                 {
@@ -305,12 +291,10 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                 if (ch == '=')
                 {
                     tokens->add(new Token("<=", "RELOP"));
-                    printf("%-*s<=\n", OUTPUT_WIDTH, "RELOP");
                 }
                 else
                 {
                     tokens->add(new Token("<", "RELOP"));
-                    printf("%-*s<\n", OUTPUT_WIDTH, "RELOP");
                     istream.putback(ch);
                 }
                 state = START;
@@ -321,12 +305,10 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                 if (ch == '=')
                 {
                     tokens->add(new Token(">=", "RELOP"));
-                    printf("%-*s>=\n", OUTPUT_WIDTH, "RELOP");
                 }
                 else
                 {
                     tokens->add(new Token(">", "RELOP"));
-                    printf("%-*s>\n", OUTPUT_WIDTH, "RELOP");
                     istream.putback(ch);
                 }
                 state = START;
@@ -337,12 +319,10 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                 if (ch == '=')
                 {
                     tokens->add(new Token("!=", "RELOP"));
-                    printf("%-*s!=\n", OUTPUT_WIDTH, "RELOP");
                 }
                 else
                 {
                     tokens->add(new Token("!", "UNARYOP"));
-                    printf("%-*s!\n", OUTPUT_WIDTH, "UNARYOP");
                     istream.putback(ch);
                 }
                 state = START;
@@ -353,12 +333,10 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                 if (ch == '=')
                 {
                     tokens->add(new Token("==", "RELOP"));
-                    printf("%-*s==\n", OUTPUT_WIDTH, "RELOP");
                 }
                 else
                 {
                     tokens->add(new Token("=", "ASSIGNOP"));
-                    printf("%-*s=\n", OUTPUT_WIDTH, "ASSIGNOP");
                     istream.putback(ch);
                 }
                 state = START;
@@ -415,12 +393,10 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                         if (m_SymbolTable.findSymbol(token.c_str()).isNull())
                         {
                             tokens->add(new Token(token, "ID"));
-                            printf("%-*s%s\n", OUTPUT_WIDTH, "ID", token.c_str());
                         }
                         else
                         {
                             tokens->add(new Token(token, "KEYWORD"));
-                            printf("%-*s%s\n", OUTPUT_WIDTH, "KEYWORD", token.c_str());
                         }
                         ///Reanalyze the non-alphanumeric
                         token.clear();
@@ -451,7 +427,6 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                     else
                     {
                         tokens->add(new Token(token, "ID"));
-                        printf("%-*s%s\n", OUTPUT_WIDTH, "ID", token.c_str());
                     }
                     token.clear();
                     istream.putback(ch);
@@ -479,7 +454,6 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                     else
                     {
                         tokens->add(new Token(token, "CONSTANT"));
-                        printf("%-*s%s\n", OUTPUT_WIDTH, "CONSTANT", token.c_str());
                     }
                     token.clear();
                     istream.putback(ch);
