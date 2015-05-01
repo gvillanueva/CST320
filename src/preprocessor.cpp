@@ -34,6 +34,25 @@ void Preprocessor::process(TokenList &tokens)
     // int implies a unit of program maximum length of 2 billion tokens
     for (int i = 0; i < tokens.length(); i++)
     {
+        if (tokens[i]->type() != "PREPROCESSOR")
+        {
+            if (tokens[i]->type() != "ID")
+                continue;
+
+            // Replace defined macros
+            SymbolPtr symbol = m_SymbolTable.findSymbol(tokens[i]->value().c_str());
+            if (!symbol.isNull())
+            {
+                Token *before = tokens[i];
+                Token *replacement = new Token(symbol.constData(),
+                                         symbol.use() == EU_ID ? "ID" : "CONSTANT");
+                tokens.insertBefore(replacement, before);
+                tokens.remove(before);
+                delete before;
+            }
+            continue;
+        }
+
         // Maintain pointer to token and remove proprocessor token from list
         Token *token = tokens[i];
         tokens.remove(token);
@@ -57,8 +76,15 @@ void Preprocessor::process(TokenList &tokens)
                 tokens.remove(value);
             }
 
+            E_USE use = EU_MACRO;
+            if (value) {
+                if (value->type() == "ID")
+                    use = EU_ID;
+                else
+                    use = EU_CONSTANT;
+            }
             // Add a preprocessor macro symbol, with const value if value exists
-            m_SymbolTable.addSymbol(macro->value().c_str(), ET_VOID, EU_MACRO,
+            m_SymbolTable.addSymbol(macro->value().c_str(), ET_VOID, use,
                                     value ? value->value().c_str() : NULL);
             delete macro;
             if (value) delete value;
@@ -141,15 +167,6 @@ void Preprocessor::process(TokenList &tokens)
 
             if (!IncludeStack.empty())
                 IncludeStack.pop_back();
-        }
-        else
-        {
-            // Replace defined macros
-            SymbolPtr symbol = m_SymbolTable.findSymbol(token->value().c_str());
-            if (!symbol.isNull())
-            {
-                token->type();
-            }
         }
 
         delete token;

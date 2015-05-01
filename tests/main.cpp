@@ -54,7 +54,8 @@ void printTokenList(TokenList *tokenList)
     for (int i = 0; i < tokenList->length(); i++)
     {
         Token *token = (*tokenList)[i];
-        std::cout << std::setw(OUTPUT_WIDTH) << token->value() << token->type() << std::endl;
+        std::cout << std::left << std::setw(OUTPUT_WIDTH) <<
+                     token->value() << token->type() << std::endl;
     }
 }
 

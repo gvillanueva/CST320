@@ -28,6 +28,7 @@ enum E_TYPE
 enum E_USE
 {
     EU_KEYWORD,
+    EU_ID,
     EU_VARIABLE,
     EU_FUNCTION,
     EU_TYPE,
@@ -99,7 +100,7 @@ public:
     char *name() { return m_Symbol->name(); }
     E_TYPE type() { return m_Symbol->type(); }
     E_USE use() { return m_Symbol->use(); }
-    void *constData() { return m_Symbol->constData(); }
+    char *constData() { return m_Symbol->constData(); }
 
     /// Used to determine if the object is a wrapper around NULL.
     bool isNull() { return m_Symbol == 0 ? true : false; }
