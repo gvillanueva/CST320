@@ -14,25 +14,34 @@
 #include <vector>
 
 /*!
- * \brief   The Token class contains a token's value and type.
+ * \brief   The Token class contains a token's lexeme and type.
  */
 class Token
 {
 public:
-    Token(std::string value, std::string type);
+    Token(std::string lexeme, std::string type);
 
-    /// Gets the value of the token's characters.
-    std::string value() const;
+    /// Gets the specific instance of the generic token type.
+    std::string lexeme() const;
 
-    /// Gets the token's type.
+    /// Gets the token's generic type.
     std::string type() const;
 
 private:
-    /// The characters composing a token.
-    std::string m_Value;
+    /// The specific instance of the generic token type.
+    std::string m_Lexeme;
 
-    /// The type of token (keyword, preprocessor, etc).
+    /// The type of token (identifier, preprocessor, etc).
     std::string m_Type;
+
+    /// The source code file where the token exists.
+    std::string m_Source;
+
+    /// The line of the source code file where the token was found.
+    int m_Line;
+
+    /// The column of the source code file where the token begins.
+    int m_Column;
 };
 
 #endif // TOKEN_H

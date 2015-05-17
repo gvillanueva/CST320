@@ -9,22 +9,22 @@
  */
 #include "token.h"
 
-Token::Token(std::string value, std::string type)
-    :m_Value(value), m_Type(type)
+Token::Token(std::string lexeme, std::string type)
+    :m_Lexeme(lexeme), m_Type(type)
 {
 }
 
 /*!
- * \brief Gets the value of the token's characters.
- * \return String representing the token characters.
+ * \brief Gets the specific instance of the generic token type.
+ * \return String representing the token's characters.
  */
-std::string Token::value() const
+std::string Token::lexeme() const
 {
-    return m_Value;
+    return m_Lexeme;
 }
 
 /*!
- * \brief Gets the token's type.
+ * \brief Gets the token's generic type.
  * \return String identifying the token type.
  */
 std::string Token::type() const

@@ -40,7 +40,7 @@ void Preprocessor::process(TokenList &tokens)
                 continue;
 
             // Replace defined macros
-            SymbolPtr symbol = m_SymbolTable.findSymbol(tokens[i]->value().c_str());
+            SymbolPtr symbol = m_SymbolTable.findSymbol(tokens[i]->lexeme().c_str());
             if (!symbol.isNull())
             {
                 Token *before = tokens[i];
@@ -57,7 +57,7 @@ void Preprocessor::process(TokenList &tokens)
         Token *token = tokens[i];
         tokens.remove(token);
 
-        if (token->value() == "#define")
+        if (token->lexeme() == "#define")
         {
             // Look an identifier to name the macro
             if (tokens[i]->type() != "ID")
@@ -84,13 +84,13 @@ void Preprocessor::process(TokenList &tokens)
                     use = EU_CONSTANT;
             }
             // Add a preprocessor macro symbol, with const value if value exists
-            m_SymbolTable.addSymbol(macro->value().c_str(), ET_VOID, use,
-                                    value ? value->value().c_str() : NULL);
+            m_SymbolTable.addSymbol(macro->lexeme().c_str(), ET_VOID, use,
+                                    value ? value->lexeme().c_str() : NULL);
             delete macro;
             if (value) delete value;
             i--;
         }
-        else if (token->value() == "#undef")
+        else if (token->lexeme() == "#undef")
         {
             // Look an identifier to name the macro
             if (tokens[i]->type() != "ID")
@@ -100,43 +100,43 @@ void Preprocessor::process(TokenList &tokens)
             }
             Token *macro = tokens[i];
             tokens.remove(macro);
-            m_SymbolTable.removeSymbol(macro->value().c_str());
+            m_SymbolTable.removeSymbol(macro->lexeme().c_str());
             delete macro;
             i--;
         }
-        else if (token->value() == "#ifdef" ||
-                 token->value() == "#ifndef")
+        else if (token->lexeme() == "#ifdef" ||
+                 token->lexeme() == "#ifndef")
         {
-            bool nullPasses = token->value() == "#ifndef";
+            bool nullPasses = token->lexeme() == "#ifndef";
 
             // Look an identifier to name the macro
             if (tokens[i]->type() != "ID")
             {
-                printf("no macro name given in %s directive\n", token->value().c_str());
+                printf("no macro name given in %s directive\n", token->lexeme().c_str());
                 continue;
             }
             Token *macro = tokens[i];
             tokens.remove(macro);
 
             // Look for a defined macro symbol
-            SymbolPtr symbol = m_SymbolTable.findSymbol(macro->value().c_str());
+            SymbolPtr symbol = m_SymbolTable.findSymbol(macro->lexeme().c_str());
 
             // Depending on directive value, ignore tokens until #endif
             if (symbol.isNull() ^ nullPasses) {
                 if (!removeTokensUntilEndif(i, tokens))
-                    printf("unterminated %s\n", token->value().c_str());
+                    printf("unterminated %s\n", token->lexeme().c_str());
             }
             else
                 m_IfPreproc = true;
             delete macro;
         }
-        else if (token->value() == "#endif")
+        else if (token->lexeme() == "#endif")
         {
             if (!m_IfPreproc)
                 printf("#endif without #if\n");
             m_IfPreproc = false;
         }
-        else if (token->value() == "#include")
+        else if (token->lexeme() == "#include")
         {
             if (tokens[i]->type() != "STRING")
             {
@@ -150,7 +150,7 @@ void Preprocessor::process(TokenList &tokens)
 
             // Use lexical analyzer to tokenize included file
             Lex lex(m_SymbolTable);
-            const char *filename = path->value().substr(1, path->value().length() - 2).c_str();
+            const char *filename = path->lexeme().substr(1, path->lexeme().length() - 2).c_str();
             delete path;
 
             for (size_t j = 0; j < IncludeStack.size(); j++)
@@ -181,13 +181,13 @@ void Preprocessor::process(TokenList &tokens)
  */
 bool Preprocessor::removeTokensUntilEndif(int i, TokenList &tokens)
 {
-    bool bEndif = tokens[i]->value() == "#endif";
+    bool bEndif = tokens[i]->lexeme() == "#endif";
     while (i < tokens.length() && !bEndif)
     {
         Token *token = tokens[i];
         tokens.remove(tokens[i]);
         delete token;
-        bEndif = tokens[i]->value() == "#endif";
+        bEndif = tokens[i]->lexeme() == "#endif";
     }
 
     if (bEndif)
