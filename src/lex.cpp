@@ -389,14 +389,14 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                     ///If anything else, it's the end of the identifier
                     else
                     {
-                        ///If the token doesn't exist in the symbol table, it's a keyword
+                        ///If the token doesn't exist in the symbol table, it's an identifier
                         if (m_SymbolTable.findSymbol(token.c_str()).isNull())
                         {
                             tokens->add(new Token(token, "ID"));
                         }
                         else
                         {
-                            tokens->add(new Token(token, "KEYWORD"));
+                            tokens->add(new Token(token, token));
                         }
                         ///Reanalyze the non-alphanumeric
                         token.clear();
