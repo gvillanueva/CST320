@@ -1,7 +1,7 @@
 /*!
  * \author      Giancarlo Villanueva
  * \date        Created, 5/12/2015
- *              Modified, 5/12/2015
+ *              Modified, 5/18/2015
  * \ingroup     CST320 - Lab2a
  * \file        syntaxanalyzer.cpp
  *
@@ -24,7 +24,7 @@ TokenIterator::TokenIterator(TokenList &tokens)
  * \brief Non-fatal consumption of a token; will not increment if \p type
  *        doesn't match the current token's type.
  * \param type  A generic token type.
- * \return True if token type matches input \p type.  Otherwise false.
+ * \return true if token type matches input \p type.  Otherwise false.
  */
 bool TokenIterator::acceptType(std::string type)
 {
@@ -42,7 +42,7 @@ bool TokenIterator::acceptType(std::string type)
 /*!
  * \brief Fatal consumption of a token. \p type must match current token's type.
  * \param type  A generic token type.
- * \return True if token type matches input \p type.  Otherwise false.
+ * \return true if token type matches input \p type.  Otherwise false.
  *
  * This function will set the iterator's acceptedLast property to false if \p
  * type does not match the token's type.
@@ -57,7 +57,7 @@ bool TokenIterator::expectType(std::string type)
 
 /*!
  * \brief TokenIterator::acceptedLast
- * \return True if last token was accepted.  Otherwise false.
+ * \return true if last token was accepted.  Otherwise false.
  *
  * This function allows production rules to determine whether a test within them
  * failed. If acceptedLast is unset, it is reset when this property is accessed.
@@ -73,6 +73,8 @@ bool TokenIterator::acceptedLast()
     return true;
 }
 
+
+
 /*!
  * \brief Creates a SyntaxAnalyzer object, maintaining reference to \p
  *        symbolTable.
@@ -83,10 +85,19 @@ SyntaxAnalyzer::SyntaxAnalyzer(SymbolTable &symbolTable, TokenList& tokenList)
 {
 }
 
+/*!
+ * \brief Parses the source tokens until an error is encountered or the tokens
+ *        are exhausted.
+ * \return true if parsed successfully.  error if syntax error encountered.
+ */
 bool SyntaxAnalyzer::parse()
 {
     return program();
 }
+
+
+/****************************** Production Rules ******************************/
+///   For information on production rule methods, consult the LLC grammar.   ///
 
 bool SyntaxAnalyzer::program()
 {
