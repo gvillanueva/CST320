@@ -23,11 +23,11 @@ public:
     Token* current();
     bool acceptType(std::string type);
     bool expectType(std::string type);
-    bool hasError();
+    bool acceptedLast();
 
 private:
     int m_CurrentIndex;
-    bool m_HasError;
+    bool m_AcceptedLast;
     TokenList& m_TokenList;
 };
 
@@ -48,6 +48,8 @@ public:
 private:
     bool program();
     bool definition();
+    bool definitionN();
+    bool definitionNN();
     bool dataDefinition();
     bool functionDefinition();
     bool functionHeader();

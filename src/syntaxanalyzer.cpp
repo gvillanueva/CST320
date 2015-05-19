@@ -11,21 +11,21 @@
 #include "tokenlist.h"
 #include "token.h"
 
+/*!
+ * \brief Instantiates a new token iterator object.
+ * \param tokens List of tokens to iterate through.
+ */
 TokenIterator::TokenIterator(TokenList &tokens)
-    :m_CurrentIndex(0), m_HasError(false), m_TokenList(tokens)
+    :m_CurrentIndex(0), m_AcceptedLast(false), m_TokenList(tokens)
 {
 }
 
-Token* TokenIterator::operator*()
-{
-    return m_TokenList[m_CurrentIndex];
-}
-
-Token* TokenIterator::current()
-{
-    return m_TokenList[m_CurrentIndex];
-}
-
+/*!
+ * \brief Non-fatal consumption of a token; will not increment if \p type
+ *        doesn't match the current token's type.
+ * \param type  A generic token type.
+ * \return True if token type matches input \p type.  Otherwise false.
+ */
 bool TokenIterator::acceptType(std::string type)
 {
     if (m_CurrentIndex >= m_TokenList.length())
@@ -39,23 +39,38 @@ bool TokenIterator::acceptType(std::string type)
         return false;
 }
 
+/*!
+ * \brief Fatal consumption of a token. \p type must match current token's type.
+ * \param type  A generic token type.
+ * \return True if token type matches input \p type.  Otherwise false.
+ *
+ * This function will set the iterator's acceptedLast property to false if \p
+ * type does not match the token's type.
+ */
 bool TokenIterator::expectType(std::string type)
 {
     if (acceptType(type))
         return true;
-    m_HasError = true;
+    m_AcceptedLast = false;
     return false;
 }
 
-bool TokenIterator::hasError()
+/*!
+ * \brief TokenIterator::acceptedLast
+ * \return True if last token was accepted.  Otherwise false.
+ *
+ * This function allows production rules to determine whether a test within them
+ * failed. If acceptedLast is unset, it is reset when this property is accessed.
+ */
+bool TokenIterator::acceptedLast()
 {
-    // Unset error flag and return true
-    if (m_HasError) {
-        m_HasError = false;
-        return true;
+    // Set accepted flag and return true
+    if (!m_AcceptedLast) {
+        m_AcceptedLast = true;
+        return false;
     }
 
-    return false;
+    return true;
 }
 
 /*!
@@ -77,26 +92,46 @@ bool SyntaxAnalyzer::program()
 {
     definition();
     while(definition());
-    return m_Iter.hasError();
+
+    return m_Iter.acceptedLast();
 }
 
 bool SyntaxAnalyzer::definition()
 {
-    if (m_Iter.acceptType("int")) {
-        if (m_Iter.expectType("ID")) {
-            while (m_Iter.acceptType(","))
-                m_Iter.expectType("ID");
-        }
-        m_Iter.expectType(";");
+    if (m_Iter.acceptType("int"))
+        definitionN();
+    else if (functionHeader()) {
+        functionBody();
+    }
+    else
+        return false;
+
+    return m_Iter.acceptedLast();
+}
+
+bool SyntaxAnalyzer::definitionN()
+{
+    if (m_Iter.expectType("ID"))
+        definitionNN();
+
+    return m_Iter.acceptedLast();
+}
+
+bool SyntaxAnalyzer::definitionNN()
+{
+    if (parameterList())
+    {
+        m_Iter.expectType("{");
+        while(dataDefinition());
+        while(statement());
+        m_Iter.expectType("}");
     }
     else
     {
-        m_Iter.acceptType("int");
-        functionHeader();
-        functionBody();
+        while (m_Iter.acceptType(","))
+            m_Iter.expectType("ID");
+        m_Iter.expectType(";");
     }
-
-    return m_Iter.hasError();
 }
 
 bool SyntaxAnalyzer::dataDefinition()
@@ -109,7 +144,7 @@ bool SyntaxAnalyzer::dataDefinition()
         m_Iter.expectType(";");
     }
 
-    return m_Iter.hasError();
+    return m_Iter.acceptedLast();
 }
 
 
@@ -119,7 +154,7 @@ bool SyntaxAnalyzer::functionDefinition()
     functionHeader();
     functionBody();
 
-    return m_Iter.hasError();
+    return m_Iter.acceptedLast();
 }
 
 bool SyntaxAnalyzer::functionHeader()
@@ -127,7 +162,7 @@ bool SyntaxAnalyzer::functionHeader()
     if (m_Iter.expectType("int"))
         parameterList();
 
-    return m_Iter.hasError();
+    return m_Iter.acceptedLast();
 }
 
 bool SyntaxAnalyzer::parameterList()
@@ -138,7 +173,7 @@ bool SyntaxAnalyzer::parameterList()
             while (parameterDeclaration());
     }
 
-    return m_Iter.hasError();
+    return m_Iter.acceptedLast();
 }
 
 bool SyntaxAnalyzer::identifierList()
@@ -147,7 +182,7 @@ bool SyntaxAnalyzer::identifierList()
         m_Iter.expectType("ID");
     } while (m_Iter.acceptType(","));
 
-    return m_Iter.hasError();
+    return m_Iter.acceptedLast();
 }
 
 bool SyntaxAnalyzer::parameterDeclaration()
@@ -159,7 +194,7 @@ bool SyntaxAnalyzer::parameterDeclaration()
         m_Iter.expectType(";");
     }
 
-    return m_Iter.hasError();
+    return m_Iter.acceptedLast();
 }
 
 bool SyntaxAnalyzer::functionBody()
@@ -170,7 +205,7 @@ bool SyntaxAnalyzer::functionBody()
         m_Iter.expectType("}");
     }
 
-    return m_Iter.hasError();
+    return m_Iter.acceptedLast();
 }
 
 bool SyntaxAnalyzer::statement()
@@ -209,7 +244,7 @@ bool SyntaxAnalyzer::statement()
         m_Iter.expectType(";");
     }
 
-    return m_Iter.hasError();
+    return m_Iter.acceptedLast();
 }
 
 bool SyntaxAnalyzer::expression()
@@ -219,13 +254,14 @@ bool SyntaxAnalyzer::expression()
         if (m_Iter.acceptType("MULOP") || m_Iter.acceptType("MULASSIGN") ||
             m_Iter.acceptType("ADDOP") || m_Iter.acceptType("ADDASSIGN") ||
             m_Iter.acceptType("SUBASSIGN") || m_Iter.acceptType("MODASSIGN") ||
-            m_Iter.acceptType("LOGICOP") || m_Iter.expectType("RELOP"))
+            m_Iter.acceptType("LOGICOP") || m_Iter.acceptType("RELOP") ||
+            m_Iter.expectType("ASSIGNOP"))
         expression();
     }
     else
         unaryExpression();
 
-    return m_Iter.hasError();
+    return m_Iter.acceptedLast();
 }
 
 bool SyntaxAnalyzer::unaryExpression()
@@ -235,12 +271,26 @@ bool SyntaxAnalyzer::unaryExpression()
     else
         return primary();
 
-    return m_Iter.hasError();
+    return m_Iter.acceptedLast();
 }
 
 bool SyntaxAnalyzer::primary()
 {
-    return false;
+    if (m_Iter.acceptType("("))
+    {
+        expression();
+        m_Iter.expectType(")");
+    }
+    else if (m_Iter.acceptType("CONSTANT")) { ; }
+    else if (m_Iter.acceptType("ID")) {
+        if (m_Iter.acceptType("("))
+        {
+            argumentList();
+            m_Iter.expectType(")");
+        }
+    }
+
+    return m_Iter.acceptedLast();
 }
 
 bool SyntaxAnalyzer::argumentList()
@@ -249,5 +299,5 @@ bool SyntaxAnalyzer::argumentList()
         expression();
     } while (m_Iter.acceptType(","));
 
-    return m_Iter.hasError();
+    return m_Iter.acceptedLast();
 }

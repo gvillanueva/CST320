@@ -102,7 +102,7 @@ void TestSyntaxAnalyzer::test_test1()
     Preprocessor preprocessor(symbols);
     preprocessor.process(*tokens);
     SyntaxAnalyzer syntaxAnalyzer(symbols, *tokens);
-    assert(!syntaxAnalyzer.parse());
+    assert(syntaxAnalyzer.parse());
 }
 
 int main(int, char*[])
