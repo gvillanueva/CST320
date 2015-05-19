@@ -40,6 +40,7 @@
 #include "../src/tokenlist.h"
 #include "../src/symboltable.h"
 #include "../src/preprocessor.h"
+#include "../src/syntaxanalyzer.h"
 #include <iostream>
 #include <iomanip>
 
@@ -105,12 +106,10 @@ int main (int argc, char* argv[])
     Preprocessor preprocessor(symbolTable);
     preprocessor.process(*tokenList);
 
-    //Print tokens and clean up
-    if (tokenList)
-    {
-        printTokenList(tokenList);
-        delete tokenList;
-    }
+    SyntaxAnalyzer syntaxAnalyzer(symbolTable, *tokenList);
+    bool bSuccess = syntaxAnalyzer.parse();
+    if (!bSuccess)
+        printf("Syntax error somewhere in source code.\n");
 
-    return 0;
+    return bSuccess;
 }
