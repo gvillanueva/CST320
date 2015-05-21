@@ -1,8 +1,8 @@
 /*!
  * \author      Giancarlo Villanueva
  * \date        Created, 4/21/2015
- *              Modified, 4/30/2015
- * \ingroup     CST320 - Lab1c
+ *              Modified, 5/20/2015
+ * \ingroup     CST320 - Lab2b
  * \file        lex.cpp
  *
  * \brief       Defines the structure of the Lex class.
@@ -120,12 +120,14 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                          ch == ';' ||
                          ch == ',')
                 {
-                    tokens->add(new Token(std::string(1, ch), std::string(1, ch)));
+                    tokens->add(new Token(std::string(1, ch), std::string(1, ch),
+                                          filename, line, ch));
                 }
                 else if (ch == '*' ||
                          ch == '%')
                 {
-                    tokens->add(new Token(std::string(1, ch), "MULOP"));
+                    tokens->add(new Token(std::string(1, ch), "MULOP", filename,
+                                          line, ch));
                 }
                 ///The following operator symbols are ambiguous (ex: + or +=)
                 else if (ch == '+')
@@ -165,7 +167,7 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                 if (ch == '"')
                 {
                     token.push_back(ch);
-                    tokens->add(new Token(token, "STRING"));
+                    tokens->add(new Token(token, "STRING", filename, line, ch));
                     token.clear();
                     state = START;
                 }
@@ -190,11 +192,12 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
             {
                 if (ch == '=')
                 {
-                    tokens->add(new Token("+=", "ADDASSIGN"));
+                    tokens->add(new Token("+=", "ADDASSIGN", filename, line,
+                                          ch));
                 }
                 else
                 {
-                    tokens->add(new Token("+", "ADDOP"));
+                    tokens->add(new Token("+", "ADDOP", filename, line, ch));
                     istream.putback(ch);
                 }
                 state = START;
@@ -204,11 +207,12 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
             {
                 if (ch == '=')
                 {
-                    tokens->add(new Token("-=", "SUBASSIGN"));
+                    tokens->add(new Token("-=", "SUBASSIGN", filename, line,
+                                          ch));
                 }
                 else
                 {
-                    tokens->add(new Token("-", "ADDOP"));
+                    tokens->add(new Token("-", "ADDOP", filename, line, ch));
                     istream.putback(ch);
                 }
                 state = START;
@@ -218,11 +222,12 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
             {
                 if (ch == '=')
                 {
-                    tokens->add(new Token("*=", "MULASSIGN"));
+                    tokens->add(new Token("*=", "MULASSIGN", filename, line,
+                                          ch));
                 }
                 else
                 {
-                    tokens->add(new Token("*", "MULOP"));
+                    tokens->add(new Token("*", "MULOP", filename, line, ch));
                     istream.putback(ch);
                 }
                 state = START;
@@ -234,11 +239,12 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                     state = COMMENTS_SINGLE_LINE;
                 else if (ch == '=')
                 {
-                    tokens->add(new Token("/=", "MULASSIGN"));
+                    tokens->add(new Token("/=", "MULASSIGN", filename, line,
+                                          ch));
                 }
                 else
                 {
-                    tokens->add(new Token("/", "MULOP"));
+                    tokens->add(new Token("/", "MULOP", filename, line, ch));
                     istream.putback(ch);
                     state = START;
                 }
@@ -248,11 +254,12 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
             {
                 if (ch == '=')
                 {
-                    tokens->add(new Token("%=", "MODASSIGN"));
+                    tokens->add(new Token("%=", "MODASSIGN", filename, line,
+                                          ch));
                 }
                 else
                 {
-                    tokens->add(new Token("%", "MULOP"));
+                    tokens->add(new Token("%", "MULOP", filename, line, ch));
                     istream.putback(ch);
                 }
                 state = START;
@@ -262,7 +269,7 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
             {
                 if (ch == '&')
                 {
-                    tokens->add(new Token("&&", "LOGICOP"));
+                    tokens->add(new Token("&&", "LOGICOP", filename, line, ch));
                 }
                 else
                 {
@@ -276,7 +283,7 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
             {
                 if (ch == '|')
                 {
-                    tokens->add(new Token("||", "LOGICOP"));
+                    tokens->add(new Token("||", "LOGICOP", filename, line, ch));
                 }
                 else
                 {
@@ -290,11 +297,11 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
             {
                 if (ch == '=')
                 {
-                    tokens->add(new Token("<=", "RELOP"));
+                    tokens->add(new Token("<=", "RELOP", filename, line, ch));
                 }
                 else
                 {
-                    tokens->add(new Token("<", "RELOP"));
+                    tokens->add(new Token("<", "RELOP", filename, line, ch));
                     istream.putback(ch);
                 }
                 state = START;
@@ -304,11 +311,11 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
             {
                 if (ch == '=')
                 {
-                    tokens->add(new Token(">=", "RELOP"));
+                    tokens->add(new Token(">=", "RELOP", filename, line, ch));
                 }
                 else
                 {
-                    tokens->add(new Token(">", "RELOP"));
+                    tokens->add(new Token(">", "RELOP", filename, line, ch));
                     istream.putback(ch);
                 }
                 state = START;
@@ -318,11 +325,11 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
             {
                 if (ch == '=')
                 {
-                    tokens->add(new Token("!=", "RELOP"));
+                    tokens->add(new Token("!=", "RELOP", filename, line, ch));
                 }
                 else
                 {
-                    tokens->add(new Token("!", "UNARYOP"));
+                    tokens->add(new Token("!", "UNARYOP", filename, line, ch));
                     istream.putback(ch);
                 }
                 state = START;
@@ -332,11 +339,11 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
             {
                 if (ch == '=')
                 {
-                    tokens->add(new Token("==", "RELOP"));
+                    tokens->add(new Token("==", "RELOP", filename, line, ch));
                 }
                 else
                 {
-                    tokens->add(new Token("=", "ASSIGNOP"));
+                    tokens->add(new Token("=", "ASSIGNOP", filename, line, ch));
                     istream.putback(ch);
                 }
                 state = START;
@@ -364,7 +371,8 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                         token == "#ifdef" || token == "#ifndef" ||
                         token == "#undef" || token == "#endif")
                     {
-                        tokens->add(new Token(token, "PREPROCESSOR"));
+                        tokens->add(new Token(token, "PREPROCESSOR", filename,
+                                              line, ch));
                         token.clear();
                         state = START;
                     }
@@ -392,11 +400,13 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                         ///If the token doesn't exist in the symbol table, it's an identifier
                         if (m_SymbolTable.findSymbol(token.c_str()).isNull())
                         {
-                            tokens->add(new Token(token, "ID"));
+                            tokens->add(new Token(token, "ID", filename, line,
+                                                  ch));
                         }
                         else
                         {
-                            tokens->add(new Token(token, token));
+                            tokens->add(new Token(token, token, filename, line,
+                                                  ch));
                         }
                         ///Reanalyze the non-alphanumeric
                         token.clear();
@@ -426,7 +436,7 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                     }
                     else
                     {
-                        tokens->add(new Token(token, "ID"));
+                        tokens->add(new Token(token, "ID", filename, line, ch));
                     }
                     token.clear();
                     istream.putback(ch);
@@ -453,7 +463,8 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
                     }
                     else
                     {
-                        tokens->add(new Token(token, "CONSTANT"));
+                        tokens->add(new Token(token, "CONSTANT", filename, line,
+                                              ch));
                     }
                     token.clear();
                     istream.putback(ch);
