@@ -44,7 +44,7 @@ TokenList *Lex::tokenizeString(const char *input)
         return NULL;
 
     std::istringstream stream(input);
-    return Analyze(stream);
+    return Analyze(stream, "");
 }
 
 /*!
@@ -86,7 +86,7 @@ TokenList *Lex::Analyze(std::istream &istream, const char *filename)
     std::string error; ///Error string
     TokenList *tokens = new TokenList;
 
-    while (istream.get(ch))
+    while (istream.get(ch) || token.length() && (ch = ' '))
     {
         switch (state)
         {
