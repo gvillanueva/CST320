@@ -115,7 +115,10 @@ int main (int argc, char* argv[])
     return bSuccess;
 }
 #else
+#include "test_symboltable.h"
 #include "test_token.h"
+#include "test_lex.h"
+#include "test_syntaxanalyzer.h"
 
 /*!
  * \brief main  Runs unit tests on the compiler classes.
@@ -127,7 +130,16 @@ int main (int argc, char* argv[])
  */
 int main(int argc, char* argv[])
 {
+    TestSymbolTable testSymbolTable;
+    testSymbolTable.runAllTests();
+
     TestToken testToken;
     testToken.runAllTests();
+
+    TestLex testLex;
+    testLex.runAllTests();
+
+    TestSyntaxAnalyzer testSyntaxAnalzer;
+    testSyntaxAnalzer.runAllTests();
 }
 #endif

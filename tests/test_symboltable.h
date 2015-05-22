@@ -18,6 +18,8 @@
 class TestSymbolTable
 {
 public:
+    void runAllTests();
+public:
     /// Scope tests
     void test_pushScope_atGlobal_scopeEqualsTwo();
     void test_popScope_atGlobal_scopeEqualsZero();
@@ -36,7 +38,6 @@ public:
     void test_findSymbol_atGlobal_succeeds();
     void test_findSymbol_atGlobal_undeclaredSymbol();
     void test_findSymbol_differentScopes_notEqual();
-
 };
 
 #endif

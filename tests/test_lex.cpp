@@ -7,7 +7,20 @@
 #include "../src/tokenlist.h"
 #include <assert.h>
 
-void TestLex::setup()
+void TestLex::runAllTests()
+{
+    setUp();
+
+    test_tokenizeString_nullString_returnNull();
+    test_tokenizeString_if_keywordToken();
+    test_tokenizeFile_nullString_returnNull();
+    test_tokenizefile_test1();
+    test_tokenizefile_test2();
+
+    //tearDown();
+}
+
+void TestLex::setUp()
 {
     m_SymbolTable.addSymbol("bool", ET_VOID, EU_KEYWORD, NULL);
     m_SymbolTable.addSymbol("break", ET_VOID, EU_KEYWORD, NULL);
@@ -22,11 +35,11 @@ void TestLex::setup()
 }
 
 /// Tests that a NULL string will return an empty token list
-void TestLex::test_tokenizeString_nullString_emptyVector()
+void TestLex::test_tokenizeString_nullString_returnNull()
 {
     Lex lex(m_SymbolTable);
     TokenList *tokens = lex.tokenizeString(NULL);
-    assert(tokens->length() == 0);
+    assert(tokens == NULL);
 }
 
 void TestLex::test_tokenizeString_if_keywordToken()
@@ -35,14 +48,14 @@ void TestLex::test_tokenizeString_if_keywordToken()
     TokenList *tokens = lex.tokenizeString("if");
     assert(tokens->length() == 1);
     assert((*tokens)[0]->lexeme() == "if");
-    assert((*tokens)[0]->type() == "keyword");
+    assert((*tokens)[0]->type() == "if");
 }
 
-void TestLex::test_tokenizeFile_nullString_emptyVector()
+void TestLex::test_tokenizeFile_nullString_returnNull()
 {
     Lex lex(m_SymbolTable);
     TokenList *tokens = lex.tokenizeFile(NULL);
-    assert(tokens->length() == 0);
+    assert(tokens == NULL);
 }
 
 void TestLex::test_tokenizefile_test1()
@@ -56,18 +69,3 @@ void TestLex::test_tokenizefile_test2()
     Lex lex(m_SymbolTable);
     TokenList *tokens = lex.tokenizeFile("test2.cpp");
 }
-
-#ifdef RUN_TESTLEX
-
-int main(int, char*[])
-{
-    TestLex tester;
-    tester.test_tokenizeString_nullString_emptyVector();
-    tester.test_tokenizeString_if_keywordToken();
-
-    tester.test_tokenizeFile_nullString_emptyVector();
-    tester.test_tokenizefile_test1();
-    tester.test_tokenizefile_test2();
-}
-
-#endif

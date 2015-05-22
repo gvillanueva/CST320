@@ -13,6 +13,28 @@
 #include "../src/symboltable.h"
 #include "../src/symbol.h"
 
+void TestSymbolTable::runAllTests()
+{
+    /// Scope tests
+    test_pushScope_atGlobal_scopeEqualsTwo();
+    test_popScope_atGlobal_scopeEqualsZero();
+
+    /// Symbol addition tests
+    test_addSymbol_atGlobal_newSymbol();
+    test_addSymbol_atGlobal_duplicateSymbolName();
+    test_addSymbol_differentScopes_allowed();
+
+    /// Symbol removal tests
+    test_removeSymbol_fromGlobalScope();
+    test_removeSymbol_fromGlobalScope_atDifferentScope();
+    test_removeSymbol_fromScope2_reusedSymbolName();
+
+    /// Symbol retrieval tests
+    test_findSymbol_atGlobal_succeeds();
+    test_findSymbol_atGlobal_undeclaredSymbol();
+    test_findSymbol_differentScopes_notEqual();
+}
+
 ///Scope tests
 /*!
  * \brief   Tests that pushing scope at the global scope will result in a scope
