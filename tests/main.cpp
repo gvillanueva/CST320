@@ -78,6 +78,7 @@ void initSymbolTable(SymbolTable &symbolTable)
     symbolTable.addSymbol("while", ET_VOID, EU_KEYWORD, NULL);
 }
 
+#ifndef RUN_ALL_TESTS
 /*!
  * \brief main is the entry point into the compiler.
  * \param argc  The number of command line arguments.
@@ -113,3 +114,20 @@ int main (int argc, char* argv[])
 
     return bSuccess;
 }
+#else
+#include "test_token.h"
+
+/*!
+ * \brief main  Runs unit tests on the compiler classes.
+ * \param argc  The number of command line arguments.
+ * \param argv  The values of the command line arguments.
+ * \return Always returns 0.
+ *
+ * The asserts in the unit tests will cause a SIGABRT signal to be emit.
+ */
+int main(int argc, char* argv[])
+{
+    TestToken testToken;
+    testToken.runAllTests();
+}
+#endif

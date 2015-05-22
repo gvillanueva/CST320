@@ -34,7 +34,7 @@ void TestLex::test_tokenizeString_if_keywordToken()
     Lex lex(m_SymbolTable);
     TokenList *tokens = lex.tokenizeString("if");
     assert(tokens->length() == 1);
-    assert((*tokens)[0]->value() == "if");
+    assert((*tokens)[0]->lexeme() == "if");
     assert((*tokens)[0]->type() == "keyword");
 }
 

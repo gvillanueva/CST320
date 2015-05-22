@@ -15,6 +15,9 @@ class SymbolTable;
 class TestSyntaxAnalyzer
 {
 public:
+    void runAllTests();
+
+public:
     void test_parameterList();
     void test_identifierList();
 

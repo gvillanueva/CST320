@@ -1,7 +1,7 @@
 /*!
  * \author      Giancarlo Villanueva
  * \date        Created, 5/17/2015
- *              Modified, 5/17/2015
+ *              Modified, 5/21/2015
  * \ingroup     CST320 - Lab2a
  * \file        test_syntaxanalyzer.cpp
  *
@@ -15,6 +15,16 @@
 #include "../src/symboltable.h"
 #include "../src/lex.h"
 #include "../src/preprocessor.h"
+
+void TestSyntaxAnalyzer::runAllTests()
+{
+    //test_parameterList();
+    test_identifierList();
+    test_unaryExpressionIncrement();
+    test_unaryExpressionDecrement();
+
+    test_test1();
+}
 
 void TestSyntaxAnalyzer::setUpDefaultSymbolTable(SymbolTable &symbolTable)
 {
@@ -103,17 +113,4 @@ void TestSyntaxAnalyzer::test_test1()
     preprocessor.process(*tokens);
     SyntaxAnalyzer syntaxAnalyzer(symbols, *tokens);
     assert(syntaxAnalyzer.parse());
-}
-
-int main(int, char*[])
-{
-    TestSyntaxAnalyzer tester;
-
-    //tester.test_parameterList();
-    tester.test_identifierList();
-    tester.test_unaryExpressionIncrement();
-    tester.test_unaryExpressionDecrement();
-
-    tester.test_test1();
-    return 0;
 }

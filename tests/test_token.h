@@ -4,8 +4,14 @@
 class TestToken
 {
 public:
-    void test_token_getValue();
+    void runAllTests();
+
+public:
+    void test_token_getLexeme();
     void test_token_getType();
+    void test_token_getSource();
+    void test_token_getLine();
+    void test_token_getColumn();
 };
 
 #endif // TEST_TOKEN_H
