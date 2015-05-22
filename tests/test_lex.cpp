@@ -15,6 +15,7 @@ void TestLex::runAllTests()
     test_tokenizeFile_nullString_returnNull();
     test_tokenizeString_if_keywordToken();
     test_tokenizeString_correctColNumbers();
+    test_tokenizeString_correctLineNumbers();
     test_tokenizefile_test1();
     test_tokenizefile_test2();
 
@@ -70,6 +71,19 @@ void TestLex::test_tokenizeString_correctColNumbers()
     assert((*tokens)[3]->column() == 7);
     assert((*tokens)[4]->column() == 10);
     assert((*tokens)[5]->column() == 11);
+}
+
+void TestLex::test_tokenizeString_correctLineNumbers()
+{
+    Lex lex(m_SymbolTable);
+    TokenList *tokens = lex.tokenizeString("if\n(\na==b\n)");
+    assert(tokens->length() == 6);
+    assert((*tokens)[0]->line() == 1);
+    assert((*tokens)[1]->line() == 2);
+    assert((*tokens)[2]->line() == 3);
+    assert((*tokens)[3]->line() == 3);
+    assert((*tokens)[4]->line() == 3);
+    assert((*tokens)[5]->line() == 4);
 }
 
 void TestLex::test_tokenizefile_test1()
