@@ -12,8 +12,9 @@ void TestLex::runAllTests()
     setUp();
 
     test_tokenizeString_nullString_returnNull();
-    test_tokenizeString_if_keywordToken();
     test_tokenizeFile_nullString_returnNull();
+    test_tokenizeString_if_keywordToken();
+    test_tokenizeString_correctColNumbers();
     test_tokenizefile_test1();
     test_tokenizefile_test2();
 
@@ -42,6 +43,13 @@ void TestLex::test_tokenizeString_nullString_returnNull()
     assert(tokens == NULL);
 }
 
+void TestLex::test_tokenizeFile_nullString_returnNull()
+{
+    Lex lex(m_SymbolTable);
+    TokenList *tokens = lex.tokenizeFile(NULL);
+    assert(tokens == NULL);
+}
+
 void TestLex::test_tokenizeString_if_keywordToken()
 {
     Lex lex(m_SymbolTable);
@@ -51,11 +59,17 @@ void TestLex::test_tokenizeString_if_keywordToken()
     assert((*tokens)[0]->type() == "if");
 }
 
-void TestLex::test_tokenizeFile_nullString_returnNull()
+void TestLex::test_tokenizeString_correctColNumbers()
 {
     Lex lex(m_SymbolTable);
-    TokenList *tokens = lex.tokenizeFile(NULL);
-    assert(tokens == NULL);
+    TokenList *tokens = lex.tokenizeString("if (a == b)");
+    assert(tokens->length() == 6);
+    assert((*tokens)[0]->column() == 1);
+    assert((*tokens)[1]->column() == 4);
+    assert((*tokens)[2]->column() == 5);
+    assert((*tokens)[3]->column() == 7);
+    assert((*tokens)[4]->column() == 10);
+    assert((*tokens)[5]->column() == 11);
 }
 
 void TestLex::test_tokenizefile_test1()

@@ -9,8 +9,9 @@ public:
 public:
     void setUp();
     void test_tokenizeString_nullString_returnNull();
-    void test_tokenizeString_if_keywordToken();
     void test_tokenizeFile_nullString_returnNull();
+    void test_tokenizeString_if_keywordToken();
+    void test_tokenizeString_correctColNumbers();
     void test_tokenizefile_test1();
     void test_tokenizefile_test2();
 
