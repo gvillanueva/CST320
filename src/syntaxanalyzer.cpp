@@ -73,6 +73,36 @@ bool TokenIterator::acceptedLast()
     return true;
 }
 
+Token* TokenIterator::operator*() const
+{
+    if (m_CurrentIndex >= m_TokenList.length())
+        return NULL;
+
+    return m_TokenList[m_CurrentIndex];
+}
+
+
+
+SyntaxError::SyntaxError(std::string message, const Token* token)
+    :m_Message(message), m_Token(token)
+{
+}
+
+SyntaxError::SyntaxError(const SyntaxError& copy)
+    :m_Message(copy.m_Message), m_Token(copy.m_Token)
+{
+}
+
+std::string SyntaxError::message() const
+{
+    return m_Message;
+}
+
+const Token* SyntaxError::token() const
+{
+    return m_Token;
+}
+
 
 
 /*!
@@ -85,6 +115,11 @@ SyntaxAnalyzer::SyntaxAnalyzer(SymbolTable &symbolTable, TokenList& tokenList)
 {
 }
 
+std::list<SyntaxError> SyntaxAnalyzer::GetLastErrors() const
+{
+    return m_ErrorList;
+}
+
 /*!
  * \brief Parses the source tokens until an error is encountered or the tokens
  *        are exhausted.
@@ -92,9 +127,14 @@ SyntaxAnalyzer::SyntaxAnalyzer(SymbolTable &symbolTable, TokenList& tokenList)
  */
 bool SyntaxAnalyzer::parse()
 {
+    m_ErrorList.clear();
     return program();
 }
 
+inline void SyntaxAnalyzer::AddError(std::string message, const Token* token)
+{
+    m_ErrorList.push_back(SyntaxError(message, token));
+}
 
 /****************************** Production Rules ******************************/
 ///   For information on production rule methods, consult the LLC grammar.   ///

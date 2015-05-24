@@ -10,6 +10,7 @@
 #ifndef SYNTAXANALYZER_H
 #define SYNTAXANALYZER_H
 #include <string>
+#include <list>
 
 class Token;
 class TokenList;
@@ -35,6 +36,9 @@ public:
     /// Gets whether the last token was accepted or generated a syntax error.
     bool acceptedLast();
 
+    /// Gets the Token pointer at the iterator's current location.
+    Token* operator*() const;
+
 private:
     /// The current index of the iterator.
     int m_CurrentIndex;
@@ -44,6 +48,20 @@ private:
 
     /// A reference to the list of tokens this object iterates over.
     TokenList& m_TokenList;
+};
+
+class SyntaxError
+{
+public:
+    SyntaxError();
+    SyntaxError(std::string message, const Token* token);
+    SyntaxError(const SyntaxError& copy);
+    std::string message() const;
+    const Token* token() const;
+
+private:
+    std::string m_Message;
+    const Token* m_Token;
 };
 
 /*!
@@ -58,6 +76,9 @@ class SyntaxAnalyzer
 public:
     /// Creates a new SyntaxAnalyzer object.
     SyntaxAnalyzer(SymbolTable &symbolTable, TokenList& tokenList);
+
+    /// Gets a list of errors from the last syntax analysis
+    std::list<SyntaxError> GetLastErrors() const;
 
     /// Process a list of tokens, evaluating its syntax.
     bool parse();
@@ -81,12 +102,18 @@ private:
     bool primary();
     bool argumentList();
 
+    /// Helper method for adding new SyntaxError objects to the list
+    inline void AddError(std::string message, const Token* token);
+
 private:
     /// A reference to a populated symbol table.
     SymbolTable &m_SymbolTable;
 
     /// An interator for our input list of tokens.
     TokenIterator m_Iter;
+
+    /// The list of errors encountered during the last Syntax Analysis
+    std::list<SyntaxError> m_ErrorList;
 };
 
 #endif // SYNTAXANALYZER_H
