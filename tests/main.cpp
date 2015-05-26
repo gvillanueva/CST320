@@ -71,7 +71,9 @@ void initSymbolTable(SymbolTable &symbolTable)
     symbolTable.addSymbol("else", ET_VOID, EU_KEYWORD, NULL);
     symbolTable.addSymbol("false", ET_VOID, EU_KEYWORD, NULL);
     symbolTable.addSymbol("if", ET_VOID, EU_KEYWORD, NULL);
+    symbolTable.addSymbol("input", ET_VOID, EU_KEYWORD, NULL);
     symbolTable.addSymbol("int", ET_VOID, EU_KEYWORD, NULL);
+    symbolTable.addSymbol("output", ET_VOID, EU_KEYWORD, NULL);
     symbolTable.addSymbol("return", ET_VOID, EU_KEYWORD, NULL);
     symbolTable.addSymbol("true", ET_VOID, EU_KEYWORD, NULL);
     symbolTable.addSymbol("void", ET_VOID, EU_KEYWORD, NULL);
@@ -123,6 +125,10 @@ int main (int argc, char* argv[])
              iter != rules.rend(); iter++)
             std::cout << *iter << std::endl;
     }
+    std::list<SyntaxError> errors = syntaxAnalyzer.GetLastErrors();
+    for (std::list<SyntaxError>::iterator iter = errors.begin();
+         iter != errors.end(); iter++)
+        std::cout << (*iter).message() << std::endl;
 
     return bSuccess;
 }

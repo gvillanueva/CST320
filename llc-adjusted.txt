@@ -38,6 +38,7 @@ Expression		=	Identifier | Identifier ExpressionN
 				'(' Expression ')' ;
 
 ExpressionN		=         ‘=’ Expression |
+				  '=' 'input' '(' ')' |
 				 ‘+=’ Expression |
 				 ‘-=’ Expression |
 				 ‘*=’ Expression |

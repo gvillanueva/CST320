@@ -425,6 +425,15 @@ bool SyntaxAnalyzer::statement()
             return true;
         }
     }
+    else if (m_Iter.acceptType("output")) {
+        if (m_Iter.acceptType("("))
+            if (expression())
+                if (m_Iter.acceptType(")"))
+                    if (m_Iter.acceptType(";")){
+                        m_MatchedRules.push_back("statement");
+                        return true;
+                    }
+    }
     else {
         expression();
         if (m_Iter.expectType(";")) {
@@ -479,9 +488,23 @@ bool SyntaxAnalyzer::expressionN()
     if (m_Iter.acceptType("MULOP") || m_Iter.acceptType("MULASSIGN") ||
         m_Iter.acceptType("ADDOP") || m_Iter.acceptType("ADDASSIGN") ||
         m_Iter.acceptType("SUBASSIGN") || m_Iter.acceptType("MODASSIGN") ||
-        m_Iter.acceptType("LOGICOP") || m_Iter.acceptType("RELOP") ||
-        m_Iter.expectType("ASSIGNOP")) {
+        m_Iter.acceptType("LOGICOP") || m_Iter.acceptType("RELOP")) {
         if (expression()) {
+            m_MatchedRules.push_back("expressionN");
+            return true;
+        }
+    }
+    else if (m_Iter.expectType("ASSIGNOP"))
+    {
+        if (m_Iter.acceptType("input")) {
+            if (m_Iter.expectType("("))
+                if (m_Iter.expectType(")"))
+                    if (m_Iter.expectType(";")) {
+                        m_MatchedRules.push_back("expressionN");
+                        return true;
+                    }
+        }
+        else if (expression()) {
             m_MatchedRules.push_back("expressionN");
             return true;
         }
