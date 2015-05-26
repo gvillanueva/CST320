@@ -1,7 +1,7 @@
 /*!
  * \author      Giancarlo Villanueva
  * \date        Created, 5/12/2015
- *              Modified, 5/18/2015
+ *              Modified, 5/25/2015
  * \ingroup     CST320 - Lab2a
  * \file        syntaxanalyzer.cpp
  *
@@ -73,6 +73,10 @@ bool TokenIterator::acceptedLast()
     return true;
 }
 
+/*!
+ * \brief Returns the pointer to the iterator's current Token.
+ * \return Pointer to the current Token object.
+ */
 Token* TokenIterator::operator*() const
 {
     if (m_CurrentIndex >= m_TokenList.length())
@@ -82,22 +86,38 @@ Token* TokenIterator::operator*() const
 }
 
 
-
+/*!
+ * \brief Instantiates a new SyntaxError object.
+ * \param message   The message associated with the syntax error.
+ * \param token     The Token at the site of the syntax error.
+ */
 SyntaxError::SyntaxError(std::string message, const Token* token)
     :m_Message(message), m_Token(token)
 {
 }
 
+/*!
+ * \brief Instantiates a new SyntaxError object as a copy of an existing object.
+ * \param The SyntaxError object to copy.
+ */
 SyntaxError::SyntaxError(const SyntaxError& copy)
     :m_Message(copy.m_Message), m_Token(copy.m_Token)
 {
 }
 
+/*!
+ * \brief Gets the message associated with the syntax error.
+ * \return The message associated with the syntax error.
+ */
 std::string SyntaxError::message() const
 {
     return m_Message;
 }
 
+/*!
+ * \brief Gets the Token associated with the syntax error.
+ * \return A pointer to the Token associated with the syntax error.
+ */
 const Token* SyntaxError::token() const
 {
     return m_Token;

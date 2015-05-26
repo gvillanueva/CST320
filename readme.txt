@@ -48,6 +48,7 @@ In Visual Studio
 
 Files
 =====
+llc-adjusted.txt	- An adjusted CFG for the LLC language.
 readme.txt		- This readme file.
 src/lex.cpp		- The implementation of the Lex class.
 src/lex.h		- The header file of the Lex class.
@@ -68,6 +69,7 @@ tests/main.cpp		- Contains int main and begins the lexical analyzer.
 tests/sources/globals.h		- A file included within the valid test file "test1.cpp".
 tests/sources/test1.cpp		- A valid test file.
 tests/sources/test2.cpp		- An invalid test file, contains illegal identifiers and symbols.
+tests/sources/test3.c		- A valid test file.
 tests/sources/test_ifdef.cpp    - A valid test file for the #ifdef directive.
 tests/sources/test_ifndef.cpp   - A valid test file for the #ifndef directive.
 

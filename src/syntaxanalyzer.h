@@ -1,7 +1,7 @@
 /*!
  * \author      Giancarlo Villanueva
  * \date        Created, 5/11/2015
- *              Modified, 5/18/2015
+ *              Modified, 5/25/2015
  * \ingroup     CST320 - Lab2a
  * \file        syntaxanalyzer.h
  *
@@ -50,17 +50,30 @@ private:
     TokenList& m_TokenList;
 };
 
+/*!
+ * \brief The SyntaxError class represents an error encountered during
+ *        syntactical analysis.
+ */
 class SyntaxError
 {
 public:
-    SyntaxError();
+    /// Instantiates a new SyntaxError object.
     SyntaxError(std::string message, const Token* token);
+
+    /// Instantiates a new SyntaxError object as a copy of an existing object.
     SyntaxError(const SyntaxError& copy);
+
+    /// Gets the message associated with the syntax error.
     std::string message() const;
+
+    /// Gets the Token associated with the syntax error.
     const Token* token() const;
 
 private:
+    /// The message representing the error in syntax.
     std::string m_Message;
+
+    /// The Token encountered at the site of the syntax error.
     const Token* m_Token;
 };
 
@@ -90,8 +103,6 @@ private:
     bool definitionN();
     bool definitionNN();
     bool dataDefinition();
-//    bool functionDefinition();
-//    bool functionHeader();
     bool parameterList();
     bool identifierList();
     bool parameterDeclaration();
@@ -99,8 +110,6 @@ private:
     bool statement();
     bool expression();
     bool expressionN();
-//    bool unaryExpression();
-//    bool primary();
     bool argumentList();
 
     /// Helper method for adding new SyntaxError objects to the list
