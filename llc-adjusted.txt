@@ -1,0 +1,65 @@
+Program			=	Definition { Definition } ;
+
+Definition		=	'int' DefinitionN |
+				Identifier Parameter_list Function_body ;
+
+DefinitionN		=	Identifier DefinitionNN ;
+
+DefinitionNN		=	'(' [Identifier_list] ')' { Parameter_declaration } Function_body |
+				{ ',' Identifier } ';' ;
+
+Data_definition		=	‘int’ Identifier { ‘,’ Identifier } ‘;’ ;
+
+//Function_header		=	Identifier Parameter_list ;
+
+Parameter_list		=	‘(‘ [Identifier_list] ‘)’ { Parameter_declaration } ;
+
+Identifier_list		=	Identifier { ‘,’ Identifier } ;
+
+Parameter_declaration	=	‘int’ Identifier { ‘,’ Identifier } ‘;’ ;
+
+Function_body		=	‘{‘ { Data_definition } { Statement } ‘}’ ;
+
+Statement		=	‘{‘ { Data_definition } { Statement } ‘}’ |
+				‘if’ ‘(‘ Expression ‘)’ Statement [‘else’ Statement] |
+				‘while’ ‘(‘ Expression ‘)’ Statement |
+				‘break’ ‘;’ |
+				‘continue’ ‘;’ |
+				‘return’ [Expression] ‘;’ |
+				[Expression] ‘;’ ;
+
+Expression		=	Identifier | Identifier ExpressionN
+				'++' Identifier |
+				'--' Identifier |
+				'!' Identifier |
+				Constant |
+				'(' Expression ')' ;
+
+ExpressionN		=         ‘=’ Expression |
+				 ‘+=’ Expression |
+				 ‘-=’ Expression |
+				 ‘*=’ Expression |
+				 ‘/=’ Expression |
+				 ‘%=’ Expression |
+				 ‘==’ Expression |
+				 ‘!=’ Expression |
+				  ‘<’ Expression |
+				 ‘<=’ Expression |
+				  ‘>’ Expression |
+				 ‘>=’ Expression |
+				  ‘+’ Expression |
+				  ‘-’ Expression |
+				  ‘*’ Expression |
+				  ‘/’ Expression |
+				  ‘%’ Expression |
+				 '(' [Argument_list] ')' ;
+
+//Unary_expression	=	‘++’ Identifier |
+//				‘--’ Identifier |
+//				‘!’ Identifier |
+//				Primary ;
+
+//Primary		=	Identifier | Constant | ‘(‘ Expression ‘)’ |
+//				Identifier ‘(‘ [Arugment_list] ‘)’ ;
+
+Argument_list		=	Expression { ‘,’ Expression }

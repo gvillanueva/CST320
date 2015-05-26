@@ -211,24 +211,6 @@ bool SyntaxAnalyzer::dataDefinition()
     return false;
 }
 
-
-//bool SyntaxAnalyzer::functionDefinition()
-//{
-//    m_Iter.acceptType("int");
-//    functionHeader();
-//    functionBody();
-
-//    return m_Iter.acceptedLast();
-//}
-
-//bool SyntaxAnalyzer::functionHeader()
-//{
-//    if (m_Iter.expectType("int"))
-//        parameterList();
-
-//    return m_Iter.acceptedLast();
-//}
-
 bool SyntaxAnalyzer::parameterList()
 {
     if (m_Iter.expectType("(")) {
@@ -376,38 +358,6 @@ bool SyntaxAnalyzer::expressionN()
 
     return false;
 }
-
-//bool SyntaxAnalyzer::unaryExpression()
-//{
-//    if (m_Iter.acceptType("++") || m_Iter.acceptType("--")) {
-//        if (m_Iter.expectType("ID"))
-//            return true;
-//    }
-//    else
-//        return primary();
-
-//    return false;
-//}
-
-//bool SyntaxAnalyzer::primary()
-//{
-//    if (m_Iter.acceptType("("))
-//    {
-//        expression();
-//        m_Iter.expectType(")");
-//    }
-//    else if (m_Iter.acceptType("CONSTANT")) { ; }
-//    else if (m_Iter.expectType("ID")) {
-//        if (m_Iter.acceptType("("))
-//        {
-//            argumentList();
-//            m_Iter.expectType(")");
-//        }
-//        return true;
-//    }
-
-//    return m_Iter.acceptedLast();
-//}
 
 bool SyntaxAnalyzer::argumentList()
 {
