@@ -110,7 +110,9 @@ int main (int argc, char* argv[])
     SyntaxAnalyzer syntaxAnalyzer(symbolTable, *tokenList);
     bool bSuccess = syntaxAnalyzer.parse();
     if (!bSuccess)
-        printf("Syntax error somewhere in source code.\n");
+        printf("NO.\n");
+    else
+        printf("YES.\n");
 
     return bSuccess;
 }
