@@ -18,7 +18,11 @@ public:
     void runAllTests();
 
 public:
+    /// Test parameterList rule
     void test_parameterList();
+    void test_parameterList_missingOpeningParen();
+    void test_parameterList_missingClosingParen();
+
     void test_identifierList();
 
     void test_unaryExpressionIncrement();

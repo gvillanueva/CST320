@@ -18,7 +18,10 @@
 
 void TestSyntaxAnalyzer::runAllTests()
 {
-    //test_parameterList();
+    test_parameterList();
+    test_parameterList_missingOpeningParen();
+    test_parameterList_missingClosingParen();
+
     test_identifierList();
     test_unaryExpressionIncrement();
     test_unaryExpressionDecrement();
@@ -54,9 +57,37 @@ void TestSyntaxAnalyzer::test_parameterList()
     tokens.add(new Token("c", "ID"));
     tokens.add(new Token(")", ")"));
 
-    int i = 0;
     SyntaxAnalyzer syntaxAnalyzer(symbols, tokens);
-    assert(!syntaxAnalyzer.parameterList());
+    assert(syntaxAnalyzer.parameterList());
+}
+
+void TestSyntaxAnalyzer::test_parameterList_missingOpeningParen()
+{
+    SymbolTable symbols;
+    setUpDefaultSymbolTable(symbols);
+
+    TokenList tokens;
+    tokens.add(new Token("a", "ID"));
+
+    SyntaxAnalyzer syntaxAnalyzer(symbols, tokens);
+    assert(!syntaxAnalyzer.parameterList());// Rule should fail
+    assert(syntaxAnalyzer.GetLastErrors().front().message() ==
+           "Expected an opening '(' token");
+}
+
+void TestSyntaxAnalyzer::test_parameterList_missingClosingParen()
+{
+    SymbolTable symbols;
+    setUpDefaultSymbolTable(symbols);
+
+    TokenList tokens;
+    tokens.add(new Token("(", "("));
+    tokens.add(new Token("a", "ID"));
+
+    SyntaxAnalyzer syntaxAnalyzer(symbols, tokens);
+    assert(!syntaxAnalyzer.parameterList());// Rule should fail
+    assert(syntaxAnalyzer.GetLastErrors().front().message() ==
+           "Expected a closing ')' token");
 }
 
 void TestSyntaxAnalyzer::test_identifierList()
@@ -71,9 +102,8 @@ void TestSyntaxAnalyzer::test_identifierList()
     tokens.add(new Token(",", ","));
     tokens.add(new Token("c", "ID"));
 
-    int i = 0;
     SyntaxAnalyzer syntaxAnalyzer(symbols, tokens);
-    assert(!syntaxAnalyzer.identifierList());
+    assert(syntaxAnalyzer.identifierList());
 }
 
 void TestSyntaxAnalyzer::test_unaryExpressionIncrement()
@@ -86,7 +116,7 @@ void TestSyntaxAnalyzer::test_unaryExpressionIncrement()
     tokens.add(new Token("a", "ID"));
 
     SyntaxAnalyzer syntaxAnalyzer(symbols, tokens);
-    assert(!syntaxAnalyzer.unaryExpression());
+    assert(syntaxAnalyzer.unaryExpression());
 }
 
 void TestSyntaxAnalyzer::test_unaryExpressionDecrement()
@@ -99,7 +129,7 @@ void TestSyntaxAnalyzer::test_unaryExpressionDecrement()
     tokens.add(new Token("a", "ID"));
 
     SyntaxAnalyzer syntaxAnalyzer(symbols, tokens);
-    assert(!syntaxAnalyzer.unaryExpression());
+    assert(syntaxAnalyzer.unaryExpression());
 }
 
 void TestSyntaxAnalyzer::test_test1()
