@@ -26,7 +26,9 @@ Statement		=	‘{‘ { Data_definition } { Statement } ‘}’ |
 				‘break’ ‘;’ |
 				‘continue’ ‘;’ |
 				‘return’ [Expression] ‘;’ |
-				[Expression] ‘;’ ;
+				[Expression] ‘;’ |
+				Identifier '=' 'input' '(' ')' ';' |
+				'output' '(' Expression ')' ';' ;
 
 Expression		=	Identifier | Identifier ExpressionN
 				'++' Identifier |
