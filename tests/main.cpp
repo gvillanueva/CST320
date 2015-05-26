@@ -109,10 +109,20 @@ int main (int argc, char* argv[])
 
     SyntaxAnalyzer syntaxAnalyzer(symbolTable, *tokenList);
     bool bSuccess = syntaxAnalyzer.parse();
-    if (!bSuccess)
+    if (!bSuccess) {
         printf("NO.\n");
-    else
+        std::list<SyntaxError> errors = syntaxAnalyzer.GetLastErrors();
+        for (std::list<SyntaxError>::iterator iter = errors.begin();
+             iter != errors.end(); iter++)
+            std::cout << (*iter).message() << std::endl;
+    }
+    else {
         printf("YES.\n");
+        std::list<std::string> rules = syntaxAnalyzer.GetProductionRules();
+        for (std::list<std::string>::reverse_iterator iter = rules.rbegin();
+             iter != rules.rend(); iter++)
+            std::cout << *iter << std::endl;
+    }
 
     return bSuccess;
 }

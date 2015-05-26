@@ -135,9 +135,22 @@ SyntaxAnalyzer::SyntaxAnalyzer(SymbolTable &symbolTable, TokenList& tokenList)
 {
 }
 
+/*!
+ * \brief Gets a list of errors from the last syntax analysis.
+ * \return A std::list of SyntaxError objects.
+ */
 std::list<SyntaxError> SyntaxAnalyzer::GetLastErrors() const
 {
     return m_ErrorList;
+}
+
+/*!
+ * \brief Gets a list of matched production rules from the last analysis.
+ * \return A std::list of production rule names.
+ */
+std::list<std::string> SyntaxAnalyzer::GetProductionRules() const
+{
+    return m_MatchedRules;
 }
 
 /*!
@@ -148,6 +161,7 @@ std::list<SyntaxError> SyntaxAnalyzer::GetLastErrors() const
 bool SyntaxAnalyzer::parse()
 {
     m_ErrorList.clear();
+    m_MatchedRules.clear();
     return program();
 }
 
@@ -162,7 +176,8 @@ inline void SyntaxAnalyzer::AddError(std::string message, const Token* token)
 bool SyntaxAnalyzer::program()
 {
     if (definition()) {
-        while(*m_Iter != 0 && definition());                    ///?
+        while(*m_Iter != 0 && definition());
+        m_MatchedRules.push_back("program");
         return true;
     }
 
@@ -172,13 +187,17 @@ bool SyntaxAnalyzer::program()
 bool SyntaxAnalyzer::definition()
 {
     if (m_Iter.acceptType("int")) {
-        if (definitionN())
+        if (definitionN()) {
+            m_MatchedRules.push_back("definition");
             return true;
+        }
     }
     else if (m_Iter.expectType("ID")) {
         if (parameterList())
-            if (functionBody())
+            if (functionBody()) {
+                m_MatchedRules.push_back("definition");
                 return true;
+            }
     }
 
     return false;
@@ -187,8 +206,10 @@ bool SyntaxAnalyzer::definition()
 bool SyntaxAnalyzer::definitionN()
 {
     if (m_Iter.expectType("ID"))
-        if (definitionNN())
+        if (definitionNN()) {
+            m_MatchedRules.push_back("definitionN");
             return true;
+        }
 
     return false;
 }
@@ -198,18 +219,22 @@ bool SyntaxAnalyzer::definitionNN()
     if (m_Iter.acceptType("(")) {
         if (identifierList())
             if (m_Iter.expectType(")")) {
-                while (parameterDeclaration()); ///?
-                if (functionBody())
+                while (parameterDeclaration());
+                if (functionBody()) {
+                    m_MatchedRules.push_back("definitionNN");
                     return true;
+                }
         }
     }
-    else// if (m_Iter.acceptType(","))
+    else
     {
-        while (m_Iter.expectType(","))         ///?
-            if (!m_Iter.expectType("ID"))             ///?
+        while (m_Iter.expectType(","))
+            if (!m_Iter.expectType("ID"))
                 return false;
-        if (m_Iter.expectType(";"))
+        if (m_Iter.expectType(";")) {
+            m_MatchedRules.push_back("definitionNN");
             return true;
+        }
     }
 
     return false;
@@ -219,12 +244,14 @@ bool SyntaxAnalyzer::dataDefinition()
 {
     if (m_Iter.expectType("int")) {
         if (m_Iter.expectType("ID")) {
-            while (m_Iter.acceptType(","))  {   ///?
-                if (!m_Iter.expectType("ID"))   ///?
+            while (m_Iter.acceptType(","))  {
+                if (!m_Iter.expectType("ID"))
                     return false;
             }
-            if (m_Iter.acceptType(";"))
+            if (m_Iter.acceptType(";")) {
+                m_MatchedRules.push_back("dataDefinition");
                 return true;
+            }
         }
     }
 
@@ -237,6 +264,7 @@ bool SyntaxAnalyzer::parameterList()
         identifierList();
         if (m_Iter.expectType(")")) {
             while (parameterDeclaration());
+            m_MatchedRules.push_back("parameterList");
             return true;
         }
     }
@@ -251,6 +279,7 @@ bool SyntaxAnalyzer::identifierList()
         while (m_Iter.expectType(","))
             if (!m_Iter.expectType("ID"))
                 return false;
+        m_MatchedRules.push_back("identifierList");
         return true;
     }
 
@@ -262,13 +291,16 @@ bool SyntaxAnalyzer::parameterDeclaration()
     if (m_Iter.expectType("int")) {
         if (m_Iter.expectType("ID")) {
             while (m_Iter.acceptType(","))
-                if (!m_Iter.expectType("ID"))
+                if (!m_Iter.expectType("ID")) {
                     return false;
-            if (m_Iter.expectType(";"))
+                }
+            if (m_Iter.expectType(";")) {
+                m_MatchedRules.push_back("parameterDeclaration");
                 return true;
+            }
         }
     }
-
+\
     return false;
 }
 
@@ -277,8 +309,10 @@ bool SyntaxAnalyzer::functionBody()
     if (m_Iter.expectType("{")) {
         while (dataDefinition());
         while (statement());
-        if (m_Iter.expectType("}"))
+        if (m_Iter.expectType("}")) {
+            m_MatchedRules.push_back("functionBody");
             return true;
+        }
     }
 
     return false;
@@ -289,8 +323,10 @@ bool SyntaxAnalyzer::statement()
     if (m_Iter.acceptType("{")) {
         while (dataDefinition());
         while (statement());
-        if (m_Iter.expectType("}"))
+        if (m_Iter.expectType("}")) {
+            m_MatchedRules.push_back("statement");
             return true;
+        }
     }
     else if (m_Iter.acceptType("if"))
     {
@@ -299,9 +335,12 @@ bool SyntaxAnalyzer::statement()
                 if (m_Iter.expectType(")"))
                     if (statement()) {
                         if (m_Iter.acceptType("else")) {
-                            if (statement())
+                            if (statement()) {
+                                m_MatchedRules.push_back("statement");
                                 return true;
+                            }
                         }
+                        m_MatchedRules.push_back("statement");
                         return true;
                     }
         }
@@ -311,26 +350,36 @@ bool SyntaxAnalyzer::statement()
         if (m_Iter.expectType("("))
             if (expression())
                 if (m_Iter.expectType(")"))
-                    if (statement())
+                    if (statement()) {
+                        m_MatchedRules.push_back("statement");
                         return true;
+                    }
     }
     else if (m_Iter.acceptType("break")) {
-        if (m_Iter.expectType(";"))
+        if (m_Iter.expectType(";")) {
+            m_MatchedRules.push_back("statement");
             return true;
+        }
     }
     else if (m_Iter.acceptType("continue")) {
-        if (m_Iter.expectType(";"))
+        if (m_Iter.expectType(";")) {
+            m_MatchedRules.push_back("statement");
             return true;
+        }
     }
     else if (m_Iter.acceptType("return")) {
         expression();
-        if (m_Iter.expectType(";"))
+        if (m_Iter.expectType(";")) {
+            m_MatchedRules.push_back("statement");
             return true;
+        }
     }
     else {
         expression();
-        if (m_Iter.expectType(";"))
+        if (m_Iter.expectType(";")) {
+            m_MatchedRules.push_back("statement");
             return true;
+        }
     }
 
     return false;
@@ -340,22 +389,32 @@ bool SyntaxAnalyzer::expression()
 {
     if (m_Iter.acceptType("ID"))
     {
-        if (expressionN())
+        if (expressionN()) {
+            m_MatchedRules.push_back("expression");
             return true;
-        else
+        }
+        else {
+            m_MatchedRules.push_back("expression");
             return true;
+        }
     }
     else if (m_Iter.acceptType("++") || m_Iter.acceptType("--") ||
              m_Iter.expectType("!")) {
-        if (m_Iter.expectType("ID"))
+        if (m_Iter.expectType("ID")) {
+            m_MatchedRules.push_back("expression");
             return true;
+        }
     }
-    else if (m_Iter.acceptType("CONSTANT"))
+    else if (m_Iter.acceptType("CONSTANT"))  {
+        m_MatchedRules.push_back("expression");
         return true;
+    }
     else if (m_Iter.acceptType("("))
         if (expression())
-            if (m_Iter.acceptType(")"))
+            if (m_Iter.acceptType(")")) {
+                m_MatchedRules.push_back("expression");
                 return true;
+            }
 
     return false;
 }
@@ -367,13 +426,17 @@ bool SyntaxAnalyzer::expressionN()
         m_Iter.acceptType("SUBASSIGN") || m_Iter.acceptType("MODASSIGN") ||
         m_Iter.acceptType("LOGICOP") || m_Iter.acceptType("RELOP") ||
         m_Iter.expectType("ASSIGNOP")) {
-        if (expression())
+        if (expression()) {
+            m_MatchedRules.push_back("expressionN");
             return true;
+        }
     }
     else if (m_Iter.expectType("(")) {
         if (argumentList())
-            if (m_Iter.expectType(")"))
+            if (m_Iter.expectType(")")) {
+                m_MatchedRules.push_back("expressionN");
                 return true;
+            }
     }
 
     return false;
@@ -385,6 +448,8 @@ bool SyntaxAnalyzer::argumentList()
         while (m_Iter.acceptType(","))
             if (!expression())
                 return false;
+
+        m_MatchedRules.push_back("argumentList");
         return true;
     }
 

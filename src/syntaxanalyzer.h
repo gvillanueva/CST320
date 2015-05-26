@@ -90,8 +90,11 @@ public:
     /// Creates a new SyntaxAnalyzer object.
     SyntaxAnalyzer(SymbolTable &symbolTable, TokenList& tokenList);
 
-    /// Gets a list of errors from the last syntax analysis
+    /// Gets a list of errors from the last syntax analysis.
     std::list<SyntaxError> GetLastErrors() const;
+
+    /// Gets a list of matched production rules from the last analysis.
+    std::list<std::string> GetProductionRules() const;
 
     /// Process a list of tokens, evaluating its syntax.
     bool parse();
@@ -124,6 +127,9 @@ private:
 
     /// The list of errors encountered during the last Syntax Analysis
     std::list<SyntaxError> m_ErrorList;
+
+    /// The list of matched production rules, by name.
+    std::list<std::string> m_MatchedRules;
 };
 
 #endif // SYNTAXANALYZER_H
