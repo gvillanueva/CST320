@@ -39,6 +39,9 @@ public:
     /// Gets the Token pointer at the iterator's current location.
     Token* operator*() const;
 
+    /// Returns the pointer to the iterator's previous Token.
+    Token* previousToken() const;
+
 private:
     /// The current index of the iterator.
     int m_CurrentIndex;

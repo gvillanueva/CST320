@@ -86,6 +86,19 @@ Token* TokenIterator::operator*() const
     return m_TokenList[m_CurrentIndex];
 }
 
+/*!
+ * \brief Returns the pointer to the iterator's previous Token.
+ * \return Pointer to the previous Token object.
+ */
+Token* TokenIterator::previousToken() const
+{
+    if (m_CurrentIndex >= m_TokenList.length() + 1)
+        return NULL;
+
+    return m_TokenList[m_CurrentIndex - 1];
+}
+
+
 
 /*!
  * \brief Instantiates a new SyntaxError object.
@@ -194,6 +207,8 @@ bool SyntaxAnalyzer::definition()
         }
     }
     else if (m_Iter.expectType("ID")) {
+        if (!m_SymbolTable.addSymbol(m_Iter.previousToken()->lexeme().c_str(), ET_INTEGER, EU_FUNCTION, NULL))
+            AddError("Reclaration of symbol", *m_Iter);
         if (parameterList())
             if (functionBody()) {
                 m_MatchedRules.push_back("definition");
@@ -206,17 +221,21 @@ bool SyntaxAnalyzer::definition()
 
 bool SyntaxAnalyzer::definitionN()
 {
-    if (m_Iter.expectType("ID"))
+    if (m_Iter.expectType("ID")) {
+        if (!m_SymbolTable.addSymbol(m_Iter.previousToken()->lexeme().c_str(), ET_INTEGER, EU_FUNCTION, NULL))
+            AddError("Reclaration of symbol", *m_Iter);
         if (definitionNN()) {
             m_MatchedRules.push_back("definitionN");
             return true;
         }
+    }
 
     return false;
 }
 
 bool SyntaxAnalyzer::definitionNN()
 {
+    // Last symbol was function declaration
     if (m_Iter.acceptType("(")) {
         if (identifierList())
             if (m_Iter.expectType(")")) {
@@ -227,6 +246,7 @@ bool SyntaxAnalyzer::definitionNN()
                 }
         }
     }
+    // Last symbol was a variable declaration
     else
     {
         while (m_Iter.expectType(","))
@@ -245,9 +265,15 @@ bool SyntaxAnalyzer::dataDefinition()
 {
     if (m_Iter.expectType("int")) {
         if (m_Iter.expectType("ID")) {
+            if (!m_SymbolTable.addSymbol(m_Iter.previousToken()->lexeme().c_str(), ET_INTEGER, EU_VARIABLE, NULL))
+                AddError("Reclaration of symbol", *m_Iter);
             while (m_Iter.acceptType(","))  {
                 if (!m_Iter.expectType("ID"))
                     return false;
+                else {
+                    if (!m_SymbolTable.addSymbol(m_Iter.previousToken()->lexeme().c_str(), ET_INTEGER, EU_VARIABLE, NULL))
+                        AddError("Reclaration of symbol", *m_Iter);
+                }
             }
             if (m_Iter.acceptType(";")) {
                 m_MatchedRules.push_back("dataDefinition");
@@ -291,10 +317,17 @@ bool SyntaxAnalyzer::parameterDeclaration()
 {
     if (m_Iter.expectType("int")) {
         if (m_Iter.expectType("ID")) {
-            while (m_Iter.acceptType(","))
+            if (!m_SymbolTable.addSymbol(m_Iter.previousToken()->lexeme().c_str(), ET_INTEGER, EU_VARIABLE, NULL))
+                AddError("Reclaration of symbol", *m_Iter);
+            while (m_Iter.acceptType(",")) {
                 if (!m_Iter.expectType("ID")) {
                     return false;
                 }
+                else {
+                    if (!m_SymbolTable.addSymbol(m_Iter.previousToken()->lexeme().c_str(), ET_INTEGER, EU_VARIABLE, NULL))
+                        AddError("Reclaration of symbol", *m_Iter);
+                }
+            }
             if (m_Iter.expectType(";")) {
                 m_MatchedRules.push_back("parameterDeclaration");
                 return true;
@@ -396,6 +429,8 @@ bool SyntaxAnalyzer::expression()
 {
     if (m_Iter.acceptType("ID"))
     {
+        if (m_SymbolTable.findSymbol(m_Iter.previousToken()->lexeme().c_str()).isNull())
+            AddError("Symbol not declared", *m_Iter);
         if (expressionN()) {
             m_MatchedRules.push_back("expression");
             return true;
@@ -408,6 +443,8 @@ bool SyntaxAnalyzer::expression()
     else if (m_Iter.acceptType("++") || m_Iter.acceptType("--") ||
              m_Iter.expectType("!")) {
         if (m_Iter.expectType("ID")) {
+            if (m_SymbolTable.findSymbol(m_Iter.previousToken()->lexeme().c_str()).isNull())
+                AddError("Symbol not declared", *m_Iter);
             m_MatchedRules.push_back("expression");
             return true;
         }
