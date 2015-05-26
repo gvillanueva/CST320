@@ -128,7 +128,7 @@ int main (int argc, char* argv[])
  *
  * The asserts in the unit tests will cause a SIGABRT signal to be emit.
  */
-int main(int argc, char* argv[])
+int main(int, char*[])
 {
     TestSymbolTable testSymbolTable;
     testSymbolTable.runAllTests();

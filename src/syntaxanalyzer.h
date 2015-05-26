@@ -90,16 +90,17 @@ private:
     bool definitionN();
     bool definitionNN();
     bool dataDefinition();
-    bool functionDefinition();
-    bool functionHeader();
+//    bool functionDefinition();
+//    bool functionHeader();
     bool parameterList();
     bool identifierList();
     bool parameterDeclaration();
     bool functionBody();
     bool statement();
     bool expression();
-    bool unaryExpression();
-    bool primary();
+    bool expressionN();
+//    bool unaryExpression();
+//    bool primary();
     bool argumentList();
 
     /// Helper method for adding new SyntaxError objects to the list
