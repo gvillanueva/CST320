@@ -142,7 +142,7 @@ inline void SyntaxAnalyzer::AddError(std::string message, const Token* token)
 bool SyntaxAnalyzer::program()
 {
     if (definition()) {
-        while(definition());                    ///?
+        while(*m_Iter != 0 && definition());                    ///?
         return true;
     }
 
