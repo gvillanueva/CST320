@@ -10,6 +10,7 @@
 #include "syntaxanalyzer.h"
 #include "tokenlist.h"
 #include "token.h"
+#include "symboltable.h"
 
 /*!
  * \brief Instantiates a new token iterator object.
@@ -307,12 +308,15 @@ bool SyntaxAnalyzer::parameterDeclaration()
 bool SyntaxAnalyzer::functionBody()
 {
     if (m_Iter.expectType("{")) {
+        m_SymbolTable.pushScope();
         while (dataDefinition());
         while (statement());
         if (m_Iter.expectType("}")) {
+            m_SymbolTable.popScope();
             m_MatchedRules.push_back("functionBody");
             return true;
         }
+        m_SymbolTable.popScope();
     }
 
     return false;
@@ -321,12 +325,15 @@ bool SyntaxAnalyzer::functionBody()
 bool SyntaxAnalyzer::statement()
 {
     if (m_Iter.acceptType("{")) {
+        m_SymbolTable.pushScope();
         while (dataDefinition());
         while (statement());
         if (m_Iter.expectType("}")) {
+            m_SymbolTable.popScope();
             m_MatchedRules.push_back("statement");
             return true;
         }
+        m_SymbolTable.popScope();
     }
     else if (m_Iter.acceptType("if"))
     {
