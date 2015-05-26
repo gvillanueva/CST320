@@ -43,6 +43,7 @@ enum E_USE
  */
 class Symbol
 {
+friend class SyntaxAnalyzer;
 public:
     /// Creates a new symbol object.
     Symbol(const char *name, E_TYPE type, E_USE use, const char *constData);
@@ -90,6 +91,7 @@ private:
  */
 class SymbolPtr
 {
+friend class SyntaxAnalyzer;
 public:
     SymbolPtr(Symbol *pSymbol)
         :m_Symbol(pSymbol)

@@ -235,7 +235,9 @@ bool SyntaxAnalyzer::definitionN()
 
 bool SyntaxAnalyzer::definitionNN()
 {
-    // Last symbol was function declaration
+    SymbolPtr symbol = m_SymbolTable.findSymbol(m_Iter.previousToken()->lexeme().c_str());
+
+    // Last symbol was function declaration, no correction necessary
     if (m_Iter.acceptType("(")) {
         if (identifierList())
             if (m_Iter.expectType(")")) {
@@ -246,12 +248,18 @@ bool SyntaxAnalyzer::definitionNN()
                 }
         }
     }
-    // Last symbol was a variable declaration
+    // Last symbol was a variable declaration, correct symbol use to variable
     else
     {
-        while (m_Iter.expectType(","))
+        symbol.m_Symbol->m_Use = EU_VARIABLE;
+        while (m_Iter.expectType(",")) {
             if (!m_Iter.expectType("ID"))
                 return false;
+            else {
+                if (!m_SymbolTable.addSymbol(m_Iter.previousToken()->lexeme().c_str(), ET_INTEGER, EU_VARIABLE, NULL))
+                    AddError("Reclaration of symbol", *m_Iter);
+            }
+        }
         if (m_Iter.expectType(";")) {
             m_MatchedRules.push_back("definitionNN");
             return true;
@@ -301,6 +309,9 @@ bool SyntaxAnalyzer::parameterList()
 
 bool SyntaxAnalyzer::identifierList()
 {
+    // The occurrence of IDENTIFIERS here are misleading, but do not signify a
+    // variable declaration.  Don't be fooled.
+
     if (m_Iter.expectType("ID"))
     {
         while (m_Iter.expectType(","))
