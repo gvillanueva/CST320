@@ -215,6 +215,8 @@ bool SyntaxAnalyzer::definition()
                 return true;
             }
     }
+    else
+        AddError("Expected 'int' or identifier.", *m_Iter);
 
     return false;
 }
@@ -229,6 +231,8 @@ bool SyntaxAnalyzer::definitionN()
             return true;
         }
     }
+    else
+        AddError("Expected identifier.", *m_Iter);
 
     return false;
 }
@@ -239,22 +243,29 @@ bool SyntaxAnalyzer::definitionNN()
 
     // Last symbol was function declaration, no correction necessary
     if (m_Iter.acceptType("(")) {
-        if (identifierList())
+        if (identifierList()) {
             if (m_Iter.expectType(")")) {
                 while (parameterDeclaration());
                 if (functionBody()) {
                     m_MatchedRules.push_back("definitionNN");
                     return true;
                 }
+            }
+            else {
+                AddError("Expected closing ')'", *m_Iter);
+                return false;
+            }
         }
     }
     // Last symbol was a variable declaration, correct symbol use to variable
     else
     {
         symbol.m_Symbol->m_Use = EU_VARIABLE;
-        while (m_Iter.expectType(",")) {
-            if (!m_Iter.expectType("ID"))
+        while (m_Iter.acceptType(",")) {
+            if (!m_Iter.expectType("ID")) {
+                AddError("Expected identifier.", *m_Iter);
                 return false;
+            }
             else {
                 if (!m_SymbolTable.addSymbol(m_Iter.previousToken()->lexeme().c_str(), ET_INTEGER, EU_VARIABLE, NULL))
                     AddError("Reclaration of symbol", *m_Iter);
@@ -264,8 +275,13 @@ bool SyntaxAnalyzer::definitionNN()
             m_MatchedRules.push_back("definitionNN");
             return true;
         }
+        else {
+            AddError("Expected ';'.", *m_Iter);
+            return false;
+        }
     }
 
+    AddError("Expected ')' or ','.", *m_Iter);
     return false;
 }
 
@@ -276,8 +292,10 @@ bool SyntaxAnalyzer::dataDefinition()
             if (!m_SymbolTable.addSymbol(m_Iter.previousToken()->lexeme().c_str(), ET_INTEGER, EU_VARIABLE, NULL))
                 AddError("Reclaration of symbol", *m_Iter);
             while (m_Iter.acceptType(","))  {
-                if (!m_Iter.expectType("ID"))
+                if (!m_Iter.expectType("ID")) {
+                    AddError("Expected identifier.", *m_Iter);
                     return false;
+                }
                 else {
                     if (!m_SymbolTable.addSymbol(m_Iter.previousToken()->lexeme().c_str(), ET_INTEGER, EU_VARIABLE, NULL))
                         AddError("Reclaration of symbol", *m_Iter);
@@ -287,8 +305,17 @@ bool SyntaxAnalyzer::dataDefinition()
                 m_MatchedRules.push_back("dataDefinition");
                 return true;
             }
+            else {
+                AddError("Expected ';'.", *m_Iter);
+            }
+        }
+        else {
+            AddError("Expected identifier.", *m_Iter);
         }
     }
+//    else {
+//        AddError("Expected 'int'.", *m_Iter);
+//    }
 
     return false;
 }
@@ -302,6 +329,12 @@ bool SyntaxAnalyzer::parameterList()
             m_MatchedRules.push_back("parameterList");
             return true;
         }
+        else {
+            AddError("Expected closing ')'", *m_Iter);
+        }
+    }
+    else {
+        AddError("Expected opening '('", *m_Iter);
     }
 
     return false;
@@ -315,10 +348,15 @@ bool SyntaxAnalyzer::identifierList()
     if (m_Iter.expectType("ID"))
     {
         while (m_Iter.expectType(","))
-            if (!m_Iter.expectType("ID"))
+            if (!m_Iter.expectType("ID")) {
+                AddError("Expected identifier.", *m_Iter);
                 return false;
+            }
         m_MatchedRules.push_back("identifierList");
         return true;
+    }
+    else {
+        AddError("Expected identifier.", *m_Iter);
     }
 
     return false;
@@ -332,6 +370,7 @@ bool SyntaxAnalyzer::parameterDeclaration()
                 AddError("Reclaration of symbol", *m_Iter);
             while (m_Iter.acceptType(",")) {
                 if (!m_Iter.expectType("ID")) {
+                    AddError("Expected identifier.", *m_Iter);
                     return false;
                 }
                 else {
@@ -343,8 +382,17 @@ bool SyntaxAnalyzer::parameterDeclaration()
                 m_MatchedRules.push_back("parameterDeclaration");
                 return true;
             }
+            else {
+                AddError("Expected ';'.", *m_Iter);
+            }
+        }
+        else {
+            AddError("Expected identifier.", *m_Iter);
         }
     }
+//    else {
+//        AddError("Expected integer.", *m_Iter);
+//    }
 \
     return false;
 }
@@ -360,7 +408,13 @@ bool SyntaxAnalyzer::functionBody()
             m_MatchedRules.push_back("functionBody");
             return true;
         }
-        m_SymbolTable.popScope();
+        else {
+            AddError("Expected closing '}'", *m_Iter);
+            m_SymbolTable.popScope();
+        }
+    }
+    else {
+        AddError("Expected opening '{'", *m_Iter);
     }
 
     return false;
@@ -377,13 +431,16 @@ bool SyntaxAnalyzer::statement()
             m_MatchedRules.push_back("statement");
             return true;
         }
-        m_SymbolTable.popScope();
+        else {
+            AddError("Expected closing '}'", *m_Iter);
+            m_SymbolTable.popScope();
+        }
     }
     else if (m_Iter.acceptType("if"))
     {
         if (m_Iter.expectType("(")) {
-            if (expression())
-                if (m_Iter.expectType(")"))
+            if (expression()) {
+                if (m_Iter.expectType(")")) {
                     if (statement()) {
                         if (m_Iter.acceptType("else")) {
                             if (statement()) {
@@ -394,28 +451,51 @@ bool SyntaxAnalyzer::statement()
                         m_MatchedRules.push_back("statement");
                         return true;
                     }
+                }
+                else {
+                    AddError("Expected closing ')'", *m_Iter);
+                }
+            }
+        }
+        else {
+            AddError("Expected opening ')'", *m_Iter);
         }
     }
     else if (m_Iter.acceptType("while"))
     {
-        if (m_Iter.expectType("("))
-            if (expression())
-                if (m_Iter.expectType(")"))
+        if (m_Iter.expectType("(")) {
+            if (expression()) {
+                if (m_Iter.expectType(")")) {
                     if (statement()) {
                         m_MatchedRules.push_back("statement");
                         return true;
                     }
+                }
+                else {
+                    AddError("Expected closing ')'", *m_Iter);
+                }
+            }
+        }
+        else {
+            AddError("Expected opening '('", *m_Iter);
+        }
     }
     else if (m_Iter.acceptType("break")) {
         if (m_Iter.expectType(";")) {
             m_MatchedRules.push_back("statement");
             return true;
         }
+        else {
+            AddError("Expected ';'", *m_Iter);
+        }
     }
     else if (m_Iter.acceptType("continue")) {
         if (m_Iter.expectType(";")) {
             m_MatchedRules.push_back("statement");
             return true;
+        }
+        else {
+            AddError("Expected ';'", *m_Iter);
         }
     }
     else if (m_Iter.acceptType("return")) {
@@ -424,15 +504,28 @@ bool SyntaxAnalyzer::statement()
             m_MatchedRules.push_back("statement");
             return true;
         }
+        else {
+            AddError("Expected ';'", *m_Iter);
+        }
     }
     else if (m_Iter.acceptType("output")) {
-        if (m_Iter.acceptType("("))
-            if (expression())
-                if (m_Iter.acceptType(")"))
-                    if (m_Iter.acceptType(";")){
+        if (m_Iter.acceptType("(")) {
+            if (expression()) {
+                if (m_Iter.acceptType(")")) {
+                    if (m_Iter.acceptType(";")) {
                         m_MatchedRules.push_back("statement");
                         return true;
                     }
+                    else {
+                        AddError("Expected ';'", *m_Iter);
+                    }
+                }
+                AddError("Expected closing ')'", *m_Iter);
+            }
+        }
+        else {
+            AddError("Expected opening '('", *m_Iter);
+        }
     }
     else {
         expression();
@@ -440,6 +533,9 @@ bool SyntaxAnalyzer::statement()
             m_MatchedRules.push_back("statement");
             return true;
         }
+//        else {
+//            AddError("Expected ';'", *m_Iter);
+//        }
     }
 
     return false;
@@ -468,17 +564,25 @@ bool SyntaxAnalyzer::expression()
             m_MatchedRules.push_back("expression");
             return true;
         }
+        else {
+            AddError("Expected identifier", *m_Iter);
+        }
     }
     else if (m_Iter.acceptType("CONSTANT"))  {
         m_MatchedRules.push_back("expression");
         return true;
     }
-    else if (m_Iter.acceptType("("))
-        if (expression())
+    else if (m_Iter.acceptType("(")) {
+        if (expression()) {
             if (m_Iter.acceptType(")")) {
                 m_MatchedRules.push_back("expression");
                 return true;
             }
+            else {
+                AddError("Expected closing ')'", *m_Iter);
+            }
+        }
+    }
 
     return false;
 }
@@ -497,12 +601,23 @@ bool SyntaxAnalyzer::expressionN()
     else if (m_Iter.expectType("ASSIGNOP"))
     {
         if (m_Iter.acceptType("input")) {
-            if (m_Iter.expectType("("))
-                if (m_Iter.expectType(")"))
+            if (m_Iter.expectType("(")) {
+                if (m_Iter.expectType(")")) {
                     if (m_Iter.expectType(";")) {
                         m_MatchedRules.push_back("expressionN");
                         return true;
                     }
+                    else {
+                        AddError("Expected ';'", *m_Iter);
+                    }
+                }
+                else {
+                    AddError("Expected closing ')'", *m_Iter);
+                }
+            }
+            else {
+                AddError("Expected opening '('", *m_Iter);
+            }
         }
         else if (expression()) {
             m_MatchedRules.push_back("expressionN");
@@ -510,11 +625,15 @@ bool SyntaxAnalyzer::expressionN()
         }
     }
     else if (m_Iter.expectType("(")) {
-        if (argumentList())
+        if (argumentList()) {
             if (m_Iter.expectType(")")) {
                 m_MatchedRules.push_back("expressionN");
                 return true;
             }
+            else {
+                AddError("Expected closing ')'", *m_Iter);
+            }
+        }
     }
 
     return false;

@@ -128,7 +128,8 @@ int main (int argc, char* argv[])
     std::list<SyntaxError> errors = syntaxAnalyzer.GetLastErrors();
     for (std::list<SyntaxError>::iterator iter = errors.begin();
          iter != errors.end(); iter++)
-        std::cout << (*iter).message() << std::endl;
+        std::cout << (*iter).message() <<  " on " << (*iter).token()->line() <<
+                     ":" << (*iter).token()->column() << std::endl;
 
     return bSuccess;
 }
