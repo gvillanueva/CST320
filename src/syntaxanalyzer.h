@@ -121,6 +121,12 @@ private:
     /// Helper method for adding new SyntaxError objects to the list
     inline void AddError(std::string message, const Token* token);
 
+    /// Helper method for determining if the next token is leading to a dataDefinition rule
+    inline bool dataDefinitionLookahead();
+
+    /// Helper method for determining if the next token is leading to a statement rule
+    inline bool statementLookahead();
+
 private:
     /// A reference to a populated symbol table.
     SymbolTable &m_SymbolTable;

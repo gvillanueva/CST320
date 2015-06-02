@@ -11,6 +11,7 @@
 #include "tokenlist.h"
 #include "token.h"
 #include "symboltable.h"
+#include <set>
 
 /*!
  * \brief Instantiates a new token iterator object.
@@ -184,6 +185,33 @@ inline void SyntaxAnalyzer::AddError(std::string message, const Token* token)
     m_ErrorList.push_back(SyntaxError(message, token));
 }
 
+inline bool SyntaxAnalyzer::dataDefinitionLookahead()
+{
+    return (*m_Iter)->lexeme() == "int";
+}
+
+inline bool SyntaxAnalyzer::statementLookahead()
+{
+    static std::set<std::string> initialStatementTokens;
+    if (initialStatementTokens.size() == 0)
+    {
+        initialStatementTokens.insert("{");
+        initialStatementTokens.insert("if");
+        initialStatementTokens.insert("while");
+        initialStatementTokens.insert("break");
+        initialStatementTokens.insert("continue");
+        initialStatementTokens.insert("return");
+        initialStatementTokens.insert("ID");
+        initialStatementTokens.insert("output");
+        initialStatementTokens.insert("++");
+        initialStatementTokens.insert("--");
+        initialStatementTokens.insert("!");
+        initialStatementTokens.insert("constant");
+        initialStatementTokens.insert("(");
+    }
+    return initialStatementTokens.find((*m_Iter)->type()) != initialStatementTokens.end();
+}
+
 /****************************** Production Rules ******************************/
 ///   For information on production rule methods, consult the LLC grammar.   ///
 
@@ -245,7 +273,8 @@ bool SyntaxAnalyzer::definitionNN()
     if (m_Iter.acceptType("(")) {
         if (identifierList()) {
             if (m_Iter.expectType(")")) {
-                while (parameterDeclaration());
+                while ((*m_Iter)->type() == "int")
+                    parameterDeclaration();
                 if (functionBody()) {
                     m_MatchedRules.push_back("definitionNN");
                     return true;
@@ -313,9 +342,9 @@ bool SyntaxAnalyzer::dataDefinition()
             AddError("Expected identifier.", *m_Iter);
         }
     }
-//    else {
-//        AddError("Expected 'int'.", *m_Iter);
-//    }
+    else {
+        AddError("Expected 'int'.", *m_Iter);
+    }
 
     return false;
 }
@@ -325,7 +354,8 @@ bool SyntaxAnalyzer::parameterList()
     if (m_Iter.expectType("(")) {
         identifierList();
         if (m_Iter.expectType(")")) {
-            while (parameterDeclaration());
+            while ((*m_Iter)->type() == "int")
+                parameterDeclaration();
             m_MatchedRules.push_back("parameterList");
             return true;
         }
@@ -390,9 +420,9 @@ bool SyntaxAnalyzer::parameterDeclaration()
             AddError("Expected identifier.", *m_Iter);
         }
     }
-//    else {
-//        AddError("Expected integer.", *m_Iter);
-//    }
+    else {
+        AddError("Expected integer.", *m_Iter);
+    }
 \
     return false;
 }
@@ -401,8 +431,10 @@ bool SyntaxAnalyzer::functionBody()
 {
     if (m_Iter.expectType("{")) {
         m_SymbolTable.pushScope();
-        while (dataDefinition());
-        while (statement());
+        while (dataDefinitionLookahead())
+            dataDefinition();
+        while (statementLookahead())
+            statement();
         if (m_Iter.expectType("}")) {
             m_SymbolTable.popScope();
             m_MatchedRules.push_back("functionBody");
@@ -424,8 +456,10 @@ bool SyntaxAnalyzer::statement()
 {
     if (m_Iter.acceptType("{")) {
         m_SymbolTable.pushScope();
-        while (dataDefinition());
-        while (statement());
+        while (dataDefinitionLookahead())
+            dataDefinition();
+        while (statementLookahead())
+            statement();
         if (m_Iter.expectType("}")) {
             m_SymbolTable.popScope();
             m_MatchedRules.push_back("statement");
